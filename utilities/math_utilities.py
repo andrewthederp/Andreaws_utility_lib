@@ -3,7 +3,7 @@ def lerp(start, end, t):
 
 
 class LerpFactory:
-    def __init__(self, start, end, lerp_func):
+    def __init__(self, start, end, lerp_func=lerp):
         self.start = start
         self.end = end
 
@@ -18,3 +18,7 @@ class LerpFactory:
 
     def lerp(self, t):
         return self.lerp_func(self.start, self.end, t)
+
+
+def get_percentage(num1, num2):
+    return num1 / num2
