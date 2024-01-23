@@ -17,4 +17,13 @@ class LocalImageEmbed(discord.Embed):
             super().set_image(url="attachment://"+url.filename)
             self.files.append(url)
 
+        return self
 
+    def set_thumbnail(self, *, url: typing.Union[str, discord.File]):
+        if type(url) == str:
+            super().set_thumbnail(url=url)
+        elif type(url) == discord.File:
+            super().set_thumbnail(url="attachment://" + url.filename)
+            self.files.append(url)
+
+        return self
