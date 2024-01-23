@@ -29,7 +29,7 @@ setup(
         '': [
             'data/**',
         ]
-    }
+    },
     python_requires=">=3.6",
     packages=find_packages(include=["utilities", "utilities.*"]),
 )
