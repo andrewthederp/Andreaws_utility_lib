@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from typing import Tuple, Union
 
@@ -8,7 +9,9 @@ rgb_or_rgba_or_hex_typehint = Union[hex_typehint, rgb_or_rgba_typehint]
 
 RGB_PATTERN = re.compile(r"\(?(\d+),\s?(\d+),\s?(\d+)(,\s?(\d+))?\)?")
 
-with open("data/colors.json", "r") as f:
+absolute_path = os.path.join(os.path.dirname(__file__), 'data', 'colors.json')
+
+with open(absolute_path, "r") as f:
     COLORS = json.load(f)
 
 
