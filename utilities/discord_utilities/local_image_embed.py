@@ -1,5 +1,5 @@
 import io
-import random
+from utilities import random
 import typing
 
 import discord
