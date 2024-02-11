@@ -1,18 +1,29 @@
+import typing
+
 import discord
 
+
 class MakeModal(discord.ui.Modal):
-    def __init__(self, *, title, callback, inputs):
+    def __init__(self,
+                 *,
+                 title: str,
+                 callback: callable,
+                 inputs: typing.List[typing.Union[dict, discord.ui.TextInput]]
+                 ):
         super().__init__(title=title)
 
         for text_input_data in inputs:
-            text_input = discord.ui.TextInput(
-                label=text_input_data["label"],
-                placeholder=text_input_data["placeholder"],
-                required=text_input_data.get("required", False),
-                style=text_input_data.get("style", discord.TextStyle.short),
-                default=text_input_data.get('default')
-            )
-            self.add_item(text_input)
+            if isinstance(text_input_data, dict):
+                text_input = discord.ui.TextInput(
+                    label=text_input_data["label"],
+                    placeholder=text_input_data["placeholder"],
+                    required=text_input_data.get("required", False),
+                    style=text_input_data.get("style", discord.TextStyle.short),
+                    default=text_input_data.get('default')
+                )
+                self.add_item(text_input)
+            elif isinstance(text_input_data, discord.ui.TextInput):
+                self.add_item(text_input_data)
 
         self.on_submit_func = callback
 

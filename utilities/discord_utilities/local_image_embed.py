@@ -4,6 +4,7 @@ import typing
 
 import discord
 from PIL import Image
+from discord.ext import commands
 
 
 class LocalImageEmbed(discord.Embed):
@@ -12,12 +13,20 @@ class LocalImageEmbed(discord.Embed):
         self.files = []
 
     async def send(self, destination: typing.Union[discord.abc.Messageable, discord.Interaction], **kwargs):
-        files = kwargs.get('files', [])
+        files = kwargs.pop('files', [])
         self.files.extend(files)
         if isinstance(destination, discord.Interaction):
             await destination.response.send_message(embed=self, files=self.files, **kwargs)
         else:
             await destination.send(embed=self, files=self.files, **kwargs)
+
+    async def edit(self, editable: typing.Union[commands.Context, discord.Interaction, discord.Message], **kwargs):
+        files = kwargs.pop('files', [])
+        self.files.extend(files)
+        if isinstance(editable, discord.Interaction):
+            await editable.response.edit_message(embed=self, attachments=self.files, **kwargs)
+        else:
+            await editable.edit(embed=self, attachments=self.files, **kwargs)
 
     def set_image(self, *, url: typing.Union[str, discord.File, Image.Image]):
         if type(url) == str:
