@@ -6,6 +6,9 @@ from .local_image_embed import *
 from .utils import get_image_url
 
 
-def convert_to_file(txt: str, filename: str):
+def convert_to_file(txt: str | bytes, filename: str):
     import io
-    return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
+    if isinstance(txt, str):
+        return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
+    else:
+        return discord.File(io.BytesIO(txt), filename=filename)
