@@ -1,7 +1,15 @@
+import typing
+
 import discord
 
+
 class MakeModal(discord.ui.Modal):
-    def __init__(self, *, title, callback, inputs):
+    def __init__(self,
+                 *,
+                 title: str,
+                 callback: callable,
+                 inputs: typing.List[typing.Union[dict, discord.ui.TextInput]]
+                 ):
         super().__init__(title=title)
 
         for text_input_data in inputs:
