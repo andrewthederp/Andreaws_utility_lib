@@ -12,7 +12,8 @@ class LocalImageEmbed(discord.Embed):
         super().__init__(**kwargs)
         self.files = []
 
-    async def send(self, destination: typing.Union[discord.abc.Messageable, discord.Interaction, discord.Webhook], **kwargs):
+    async def send(self, destination: typing.Union[discord.abc.Messageable, discord.Interaction, discord.Webhook],
+                   **kwargs):
         files = kwargs.pop('files', [])
         self.files.extend(files)
         if isinstance(destination, discord.Interaction):
@@ -20,21 +21,26 @@ class LocalImageEmbed(discord.Embed):
         else:
             await destination.send(embed=self, files=self.files, **kwargs)
 
-    async def edit(self, editable: typing.Union[commands.Context, discord.Interaction, discord.Message, discord.Webhook], **kwargs):
+    async def edit(self,
+                   editable: typing.Union[commands.Context, discord.Interaction, discord.Message, discord.Webhook],
+                   **kwargs):
         files = kwargs.pop('files', [])
         self.files.extend(files)
         if isinstance(editable, discord.Interaction):
             await editable.response.edit_message(embed=self, attachments=self.files, **kwargs)
-        elif isinstance(editable, discord.Webhook):
+        elif getattr(editable, 'edit_message', False):
             message_id = kwargs.pop('message_id')
+            embeds = kwargs.pop('embeds', [])
+            if embed := kwargs.pop('embed'):
+                embeds.append(embed)
             await editable.edit_message(message_id, embed=self, attachments=self.files, **kwargs)
         else:
             await editable.edit(embed=self, attachments=self.files, **kwargs)
 
     def set_image(self, *, url: typing.Union[str, discord.File, Image.Image]):
-        if type(url) == str:
+        if isinstance(url, str):
             super().set_image(url=url)
-        elif type(url) == discord.File:
+        elif isinstance(url, discord.File):
             super().set_image(url="attachment://" + url.filename)
             self.files.append(url)
         elif isinstance(url, Image.Image):
