@@ -26,7 +26,7 @@ class LocalImageEmbed(discord.Embed):
                    **kwargs):
         files = kwargs.pop('files', [])
         self.files.extend(files)
-        print(editable, type(editable), dir(editable))
+
         if isinstance(editable, discord.Interaction):
             await editable.response.edit_message(embed=self, attachments=self.files, **kwargs)
         elif isinstance(editable, discord.Webhook):
