@@ -12,3 +12,11 @@ def convert_to_file(txt: str | bytes, filename: str):
         return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
     else:
         return discord.File(io.BytesIO(txt), filename=filename)
+
+
+    # amount = amount.replace("max", f"{max_amt}")
+    # amount = amount.replace("all", f"{max_amt}")
+    # amount = re.sub(r"[^0-9ekEK.]", r"", amount)
+    # amount = amount.replace(".0", "")
+    # amount = amount.replace("k", "*1000")
+    # amount = amount.replace("e", "*10**")

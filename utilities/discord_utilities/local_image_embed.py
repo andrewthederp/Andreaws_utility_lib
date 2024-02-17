@@ -12,7 +12,7 @@ class LocalImageEmbed(discord.Embed):
         super().__init__(**kwargs)
         self.files = []
 
-    async def send(self, destination: typing.Union[discord.abc.Messageable, discord.Interaction], **kwargs):
+    async def send(self, destination: typing.Union[discord.abc.Messageable, discord.Interaction, discord.Webhook], **kwargs):
         files = kwargs.pop('files', [])
         self.files.extend(files)
         if isinstance(destination, discord.Interaction):
@@ -20,11 +20,14 @@ class LocalImageEmbed(discord.Embed):
         else:
             await destination.send(embed=self, files=self.files, **kwargs)
 
-    async def edit(self, editable: typing.Union[commands.Context, discord.Interaction, discord.Message], **kwargs):
+    async def edit(self, editable: typing.Union[commands.Context, discord.Interaction, discord.Message, discord.Webhook], **kwargs):
         files = kwargs.pop('files', [])
         self.files.extend(files)
         if isinstance(editable, discord.Interaction):
             await editable.response.edit_message(embed=self, attachments=self.files, **kwargs)
+        elif isinstance(editable, discord.Webhook):
+            message_id = kwargs.pop('message_id')
+            await editable.edit_message(message_id, embed=self, attachments=self.files, **kwargs)
         else:
             await editable.edit(embed=self, attachments=self.files, **kwargs)
 
