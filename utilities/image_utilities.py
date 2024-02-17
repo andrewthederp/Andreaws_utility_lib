@@ -1,5 +1,13 @@
 import numpy as np
-from PIL import Image
+from PIL import Image,ImageFont
+
+class ResizeableTrueTypeFont:
+    def __init__(self, font_path):
+        self.font_path = font_path
+
+    def __getitem__(self, size):
+        return ImageFont.truetype(self.font_path, size)
+
 
 def get_avg_color(path):
     image = Image.open(path)
