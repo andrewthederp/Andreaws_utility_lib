@@ -33,4 +33,4 @@ def run_in_executor(func):
 
 
 def chunk(iterable, *, chunk_size):
-    return [iterable[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [iterable[i:i + chunk_size] for i in range(0, len(iterable), chunk_size)]
