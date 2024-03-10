@@ -2,6 +2,7 @@ import asyncio
 import functools
 from inspect import isawaitable
 
+
 # def run_in_executor():
 #     def decorator(func):
 #         @functools.wraps(func)
@@ -29,3 +30,7 @@ def run_in_executor(func):
             return out
 
     return wrapper
+
+
+def chunk(iterable, *, chunk_size):
+    return [iterable[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
