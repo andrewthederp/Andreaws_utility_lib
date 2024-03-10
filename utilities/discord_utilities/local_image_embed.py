@@ -13,13 +13,13 @@ class LocalImageEmbed(discord.Embed):
         self.files = []
 
     async def send(self, destination: typing.Union[discord.abc.Messageable, discord.Interaction, discord.Webhook],
-                   **kwargs):
+                   **kwargs) -> typing.Union[discord.WebhookMessage, discord.Message, None]:
         files = kwargs.pop('files', [])
         self.files.extend(files)
         if isinstance(destination, discord.Interaction):
             await destination.response.send_message(embed=self, files=self.files, **kwargs)
         else:
-            await destination.send(embed=self, files=self.files, **kwargs)
+            return await destination.send(embed=self, files=self.files, **kwargs)
 
     async def edit(self,
                    editable: typing.Union[commands.Context, discord.Interaction, discord.Message, discord.Webhook],
