@@ -1,6 +1,7 @@
 import typing
 
 import discord
+from discord import Interaction
 
 
 class Confirm(discord.ui.View):
@@ -17,6 +18,9 @@ class Confirm(discord.ui.View):
 
         self.yes_callback = yes_callback
         self.no_callback = no_callback
+
+    async def interaction_check(self, interaction):
+        return interaction.user == self.user
 
     @discord.ui.button(label='Yes', style=discord.ButtonStyle.green)
     async def yes_button(self, interaction: discord.Interaction, button: discord.Button):
