@@ -1,4 +1,8 @@
+from typing import Any
+
 import discord
+from discord import Interaction
+from discord._types import ClientT
 from discord.ext import commands
 from .modal_creator import MakeModal
 import typing
@@ -9,6 +13,43 @@ class PaginatorBehaviour(Enum):
     loop_around = 0
     disallow = 1
     disable = 2
+
+
+class DisablePaginator(discord.ui.Button["Paginator"]):
+    def __init__(self, label, style, row, emoji):
+        super().__init__(label=label, style=style, row=row, emoji=emoji)
+
+    async def callback(self, interaction):
+        view = self.view
+        view.stop()
+        for child in view.children:
+            child.disabled = True
+        await interaction.response.edit_message(view=self)
+
+
+class DeletePaginator(discord.ui.Button["Paginator"]):
+    def __init__(self, label, style, row, emoji):
+        super().__init__(label=label, style=style, row=row, emoji=emoji)
+
+    async def callback(self, interaction):
+        view = self.view
+        view.stop()
+        await interaction.response.defer()
+        if view.message:
+            try:
+                await view.message.delete()
+            except discord.NotFound:
+                pass
+
+
+class EndPaginator(discord.ui.Button["Paginator"]):
+    def __init__(self, label, style, row, emoji):
+        super().__init__(label=label, style=style, row=row, emoji=emoji)
+
+    async def callback(self, interaction):
+        view = self.view
+        view.stop()
+        await interaction.response.edit_message(view=None)
 
 
 class FirstPage(discord.ui.Button["Paginator"]):
@@ -176,7 +217,7 @@ class Paginator(discord.ui.View):
 
     def add_button(
             self,
-            action: typing.Literal["first", "previous", "show", "goto", "next", "last"],
+            action: typing.Literal["first", "previous", "show", "goto", "next", "last", "delete", "disable", "end"],
             *,
             label: typing.Optional[str] = None,
             style: discord.ButtonStyle = discord.ButtonStyle.secondary,
@@ -195,3 +236,18 @@ class Paginator(discord.ui.View):
             self.add_item(NextPage(label, style, row, emoji))
         elif action == "last":
             self.add_item(LastPage(label, style, row, emoji))
+        elif action == "delete":
+            self.add_item(DeletePaginator(label, style, row, emoji))
+        elif action == "disable":
+            self.add_item(DisablePaginator(label, style, row, emoji))
+        elif action == "end":
+            self.add_item(EndPaginator(label, style, row, emoji))
+
+
+def embed_creator(text, num, *, title='', prefix='', suffix='', color=None, colour=None):
+    if color is not None and colour is not None:
+        raise ValueError
+
+    return [discord.Embed(title=title, description=prefix + (text[i:i + num]) + suffix,
+                          color=color or colour) for i in range(0, len(text), num)]
+
