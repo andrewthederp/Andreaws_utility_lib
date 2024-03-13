@@ -2,7 +2,10 @@ import discord
 import typing
 from discord.ext import commands
 
-def get_image_url(context_or_interaction: typing.Union[discord.Interaction, commands.Context], string: typing.Optional[str]):
+
+def get_image_url(
+        context_or_interaction: typing.Union[discord.Interaction, commands.Context], string: typing.Optional[str]
+        ):
     if string.lower() in ["user", "author"]:
         if isinstance(context_or_interaction, discord.Interaction):
             user = context_or_interaction.user

@@ -41,7 +41,7 @@ class EmbedCreator(discord.ui.View):
         else:
             embed_amt = len(self.embed_versions)
 
-            if self.current_embed_pos != embed_amt-1:
+            if self.current_embed_pos != embed_amt - 1:
                 print(self.embed_versions[:self.current_embed_pos])
                 self.embed_versions = self.embed_versions[:self.current_embed_pos]
 
@@ -68,7 +68,8 @@ class EmbedCreator(discord.ui.View):
             inputs=[
                 {"label": "Title", "placeholder": "Embed title",
                  "default": None if self.embed.title in [None, '** **'] else self.embed.title}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -86,7 +87,8 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Description", "placeholder": "Embed description", "default": self.embed.description}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -111,7 +113,8 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Color", "placeholder": "Embed color", "default": hex_color}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -134,7 +137,8 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Title Url", "placeholder": "Embed title url", "default": self.embed.url}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -147,11 +151,15 @@ class EmbedCreator(discord.ui.View):
                     try:
                         self.embed.timestamp = datetime.datetime.fromtimestamp(int(timestamp))
                     except OSError:
-                        return await inter.response.send_message(content="that is not a valid unix timestamp",
-                                                                 ephemeral=True)
+                        return await inter.response.send_message(
+                            content="that is not a valid unix timestamp",
+                            ephemeral=True
+                            )
                 else:
-                    return await inter.response.send_message(content="The timestamp must be a unix timestamp",
-                                                             ephemeral=True)
+                    return await inter.response.send_message(
+                        content="The timestamp must be a unix timestamp",
+                        ephemeral=True
+                        )
             else:
                 self.embed.timestamp = None
 
@@ -162,7 +170,8 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Timestamp", "placeholder": "Embed timestamp"}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -186,7 +195,8 @@ class EmbedCreator(discord.ui.View):
                 {"label": "Field name", "placeholder": "The name of the field", "required": True},
                 {"label": "Field value", "placeholder": "The value of the field", "required": True},
                 {"label": "Field inline", "placeholder": "Whether the field is inline or not (keep empty for false)"},
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -223,7 +233,8 @@ class EmbedCreator(discord.ui.View):
                 {"label": "Field name", "placeholder": "The name of the field", "required": True},
                 {"label": "Field value", "placeholder": "The value of the field", "required": True},
                 {"label": "Field inline", "placeholder": "Whether the field is inline or not (keep empty for false)"},
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -261,7 +272,8 @@ class EmbedCreator(discord.ui.View):
                 {"label": "Field name", "placeholder": "The name of the field"},
                 {"label": "Field value", "placeholder": "The value of the field"},
                 {"label": "Field inline", "placeholder": "Whether the field is inline or not (keep empty for false)"},
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -288,15 +300,18 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Field position", "placeholder": "The position of the field to remove", "required": True}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Clear Fields", style=discord.ButtonStyle.red, row=2, disabled=True)
     async def clear_all_fields_button(self, interaction: discord.Interaction, _: discord.Button):
         view = Confirm(user=interaction.user)
-        await interaction.response.send_message(content="Are you sure you want to clear all fields?", view=view,
-                                                ephemeral=True)
+        await interaction.response.send_message(
+            content="Are you sure you want to clear all fields?", view=view,
+            ephemeral=True
+            )
         await view.wait()
 
         if view.answer:
@@ -329,7 +344,8 @@ class EmbedCreator(discord.ui.View):
                 {"label": "Author name", "placeholder": "Author name", "default": author.get("name")},
                 {"label": "Author url", "placeholder": "Author url", "default": author.get("url")},
                 {"label": "Author icon url", "placeholder": "Author icon url", "default": author.get("icon_url")}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -347,7 +363,8 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Thumbnail URL", "placeholder": "Thumbnail url", "default": thumbnail.get('url')}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -365,7 +382,8 @@ class EmbedCreator(discord.ui.View):
             callback=modal_callback,
             inputs=[
                 {"label": "Image URL", "placeholder": "Image url", "default": image.get('url')}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
 
@@ -392,10 +410,10 @@ class EmbedCreator(discord.ui.View):
             inputs=[
                 {"label": "Footer text", "placeholder": "Footer text", "default": footer.get("text")},
                 {"label": "Footer Icon url", "placeholder": "Footer icon url", "default": footer.get("icon_url")}
-            ])
+            ]
+        )
 
         await interaction.response.send_modal(modal)
-
 
     @discord.ui.button(emoji="⬅️", style=discord.ButtonStyle.green, row=4, disabled=True)
     async def previous_embed_button(self, interaction: discord.Interaction, _: discord.Button):
@@ -405,7 +423,6 @@ class EmbedCreator(discord.ui.View):
         self.next_embed_button.disabled = False
 
         self.embed = self.embed_versions[self.current_embed_pos]
-
 
         if not self.embed.fields:
             self.insert_field_at_button.disabled = True
@@ -423,7 +440,7 @@ class EmbedCreator(discord.ui.View):
     @discord.ui.button(emoji="➡️", style=discord.ButtonStyle.green, row=4, disabled=True)
     async def next_embed_button(self, interaction: discord.Interaction, _: discord.Button):
         self.current_embed_pos += 1
-        if self.current_embed_pos == len(self.embed_versions)-1:
+        if self.current_embed_pos == len(self.embed_versions) - 1:
             self.next_embed_button.disabled = True
         self.previous_embed_button.disabled = False
 
