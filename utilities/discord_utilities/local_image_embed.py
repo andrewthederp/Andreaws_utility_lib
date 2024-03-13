@@ -3,9 +3,17 @@ import random
 import typing
 
 import discord
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 from discord.ext import commands
 
+
+if Image:
+    type_hint = typing.Union[str, discord.File, Image.Image]
+else:
+    type_hint = typing.Union[str, discord.File]
 
 class LocalImageEmbed(discord.Embed):
     def __init__(self, **kwargs):
@@ -35,13 +43,13 @@ class LocalImageEmbed(discord.Embed):
         else:
             await editable.edit(embed=self, attachments=self.files, **kwargs)
 
-    def set_image(self, *, url: typing.Union[str, discord.File, Image.Image]):
+    def set_image(self, *, url: type_hint):
         if isinstance(url, str):
             super().set_image(url=url)
         elif isinstance(url, discord.File):
             super().set_image(url="attachment://" + url.filename)
             self.files.append(url)
-        elif isinstance(url, Image.Image):
+        elif Image and isinstance(url, Image.Image):
             buffer = io.BytesIO()
             url.save(buffer, "PNG")
             buffer.seek(0)
@@ -54,13 +62,13 @@ class LocalImageEmbed(discord.Embed):
 
         return self
 
-    def set_thumbnail(self, *, url: typing.Union[str, discord.File, Image.Image]):
+    def set_thumbnail(self, *, url: type_hint):
         if isinstance(url, str):
             super().set_thumbnail(url=url)
         elif isinstance(url, discord.File):
             super().set_thumbnail(url="attachment://" + url.filename)
             self.files.append(url)
-        elif isinstance(url, Image.Image):
+        elif Image and isinstance(url, Image.Image):
             buffer = io.BytesIO()
             url.save(buffer, "PNG")
             buffer.seek(0)
