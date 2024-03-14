@@ -1,5 +1,12 @@
 import discord
 
+import os
+
+try:
+    import jishaku
+except ImportError:
+    jishaku = None
+
 from .embed_creator import EmbedCreator
 from .confirmation import Confirm
 from .modal_creator import MakeModal
@@ -15,6 +22,18 @@ def convert_to_file(txt: str | bytes, filename: str):
         return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
     else:
         return discord.File(io.BytesIO(txt), filename=filename)
+
+
+if jishaku:
+    def set_preferred_jishaku_flags():
+        os.environ.setdefault("JISHAKU_NO_UNDERSCORE", "1")
+        os.environ.setdefault("JISHAKU_FORCE_PAGINATOR", "1")
+        os.environ.setdefault("JISHAKU_NO_DM_TRACEBACK", "1")
+        os.environ.setdefault("JISHAKU_HIDE", "1")
+        os.environ.setdefault("JISHAKU_USE_ANSI_ALWAYS", "1")
+        os.environ.setdefault("JISHAKU_USE_ANSI_NEVER", "1")
+else:
+    set_preferred_jishaku_flags = NotImplemented
 
     # amount = amount.replace("max", f"{max_amt}")
     # amount = amount.replace("all", f"{max_amt}")
