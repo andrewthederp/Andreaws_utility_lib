@@ -6,6 +6,9 @@ from itertools import groupby
 import inspect
 
 
+original_function = discord.ui.View.to_components
+
+
 class ColumnedView(discord.ui.View):
     def to_components(self):
         def key(item: ColumnedButton) -> int:
@@ -85,3 +88,8 @@ def columned_button(
 
 def make_views_columned():
     discord.ui.View.to_components = ColumnedView.to_components
+
+
+def make_views_uncolumned():
+    discord.ui.View.to_components = original_function
+
