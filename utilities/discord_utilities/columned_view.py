@@ -12,7 +12,7 @@ original_function = discord.ui.View.to_components
 class ColumnedView(discord.ui.View):
     def to_components(self):
         def key(item: ColumnedButton) -> int:
-            return item.row or 0
+            return item._rendered_row or 0
 
         children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
