@@ -9,7 +9,7 @@ import typing
 from enum import Enum
 
 
-class PaginatorBehaviour(Enum):
+class PaginatorBehaviour:
     loop_around = 0
     disallow = 1
     disable = 2
@@ -118,7 +118,7 @@ class NextPage(discord.ui.Button["Paginator"]):
         if view.paginator_behaviour == PaginatorBehaviour.loop_around and view.current_page == len(view.pages):
             view.current_page = 0
         elif view.paginator_behaviour == PaginatorBehaviour.disallow and view.current_page == len(view.pages):
-            view.current_page = len(view.pages)
+            view.current_page = len(view.pages) - 1
             return await interaction.response.send_message(content=f"You can't do that!", ephemeral=True)
 
         await view.before_callback(interaction)
@@ -171,17 +171,18 @@ class Paginator(discord.ui.View):
         for child in self.children:
             if isinstance(child, (ShowPage, GotoPage)):
                 child.label = str(self.current_page + 1)
-            elif isinstance(child, PreviousPage) and self.paginator_behaviour == PaginatorBehaviour.disable:
+            elif isinstance(child, (PreviousPage, FirstPage)) and self.paginator_behaviour == PaginatorBehaviour.disable:
                 if self.current_page == 0:
                     child.disabled = True
                 else:
                     child.disabled = False
-            elif isinstance(child, NextPage) and self.paginator_behaviour == PaginatorBehaviour.disable:
+            elif isinstance(child, (NextPage, LastPage)) and self.paginator_behaviour == PaginatorBehaviour.disable:
                 if self.current_page == len(self.pages) - 1:
                     child.disabled = True
                 else:
                     child.disabled = False
 
+        print(self.current_page)
         page = self.pages[self.current_page]
         if isinstance(page, dict):
             await interaction.response.edit_message(view=self, **kwargs)
@@ -225,17 +226,29 @@ class Paginator(discord.ui.View):
             emoji: typing.Optional[typing.Union[str, discord.Emoji, discord.PartialEmoji]] = None,
     ):
         if action == "first":
-            self.add_item(FirstPage(label, style, row, emoji))
+            button = FirstPage(label, style, row, emoji)
+            if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == 0:
+                button.disabled = True
+            self.add_item(button)
         elif action == "previous":
-            self.add_item(PreviousPage(label, style, row, emoji))
+            button = PreviousPage(label, style, row, emoji)
+            if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == 0:
+                button.disabled = True
+            self.add_item(button)
         elif action == "show":
             self.add_item(ShowPage(style, row, emoji))
         elif action == "goto":
             self.add_item(GotoPage(style, row, emoji))
         elif action == "next":
-            self.add_item(NextPage(label, style, row, emoji))
+            button = NextPage(label, style, row, emoji)
+            if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == len(self.pages)-1:
+                button.disabled = True
+            self.add_item(button)
         elif action == "last":
-            self.add_item(LastPage(label, style, row, emoji))
+            button = LastPage(label, style, row, emoji)
+            if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == len(self.pages)-1:
+                button.disabled = True
+            self.add_item(button)
         elif action == "delete":
             self.add_item(DeletePaginator(label, style, row, emoji))
         elif action == "disable":
