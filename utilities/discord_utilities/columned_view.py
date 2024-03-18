@@ -1,10 +1,12 @@
 import discord
 from discord import ButtonStyle
-from typing import Optional, Union, Dict, List
+from typing import Optional, Union, Dict, List, TypeVar
 from discord import Emoji, PartialEmoji
 from itertools import groupby
 import inspect
 
+
+V = TypeVar('V', bound=typing.Union['View', 'ColumnedView'], covariant=True)
 
 original_function = discord.ui.View.to_components
 
@@ -31,7 +33,7 @@ class ColumnedView(discord.ui.View):
         return components
 
 
-class ColumnedButton(discord.ui.Button):
+class ColumnedButton(discord.ui.Button[V]):
     def __init__(
             self,
             *,
