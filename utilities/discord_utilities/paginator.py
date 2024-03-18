@@ -225,6 +225,7 @@ class Paginator(discord.ui.View):
             row: typing.Optional[int] = None,
             emoji: typing.Optional[typing.Union[str, discord.Emoji, discord.PartialEmoji]] = None,
     ):
+        button = None
         if action == "first":
             button = FirstPage(label, style, row, emoji)
             if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == 0:
@@ -236,9 +237,11 @@ class Paginator(discord.ui.View):
                 button.disabled = True
             self.add_item(button)
         elif action == "show":
-            self.add_item(ShowPage(style, row, emoji))
+            button = ShowPage(style, row, emoji)
+            self.add_item(button)
         elif action == "goto":
-            self.add_item(GotoPage(style, row, emoji))
+            button = GotoPage(style, row, emoji)
+            self.add_item(button)
         elif action == "next":
             button = NextPage(label, style, row, emoji)
             if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == len(self.pages)-1:
@@ -250,11 +253,16 @@ class Paginator(discord.ui.View):
                 button.disabled = True
             self.add_item(button)
         elif action == "delete":
-            self.add_item(DeletePaginator(label, style, row, emoji))
+            button = DeletePaginator(label, style, row, emoji)
+            self.add_item(button)
         elif action == "disable":
-            self.add_item(DisablePaginator(label, style, row, emoji))
+            button = DisablePaginator(label, style, row, emoji)
+            self.add_item(button)
         elif action == "end":
-            self.add_item(EndPaginator(label, style, row, emoji))
+            button = EndPaginator(label, style, row, emoji)
+            self.add_item(button)
+
+        return button
 
 
 def embed_creator(text, num, *, title='', prefix='', suffix='', color=None, colour=None):
