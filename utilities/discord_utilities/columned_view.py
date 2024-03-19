@@ -1,3 +1,5 @@
+import typing
+
 import discord
 from discord import ButtonStyle
 from typing import Optional, Union, Dict, List, TypeVar
@@ -6,14 +8,14 @@ from itertools import groupby
 import inspect
 
 
-V = TypeVar('V', bound=typing.Union['View', 'ColumnedView'], covariant=True)
+V = TypeVar('V', bound=Union['View', 'ColumnedView'], covariant=True)
 
 original_function = discord.ui.View.to_components
 
 
 class ColumnedView(discord.ui.View):
     def to_components(self):
-        def key(item: ColumnedButton) -> int:
+        def key(item: discord.ui.Item) -> int:
             return item._rendered_row or 0
 
         children = sorted(self._children, key=key)
