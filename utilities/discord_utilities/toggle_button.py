@@ -13,5 +13,5 @@ class ToggleButton(discord.ui.Button):
 
     async def callback(self, interaction):
         self.state = not self.state
-        self.style = styles[self.state]
+        self.style = self.styles[self.state]
         await self.after_callback(interaction)
