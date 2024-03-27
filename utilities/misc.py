@@ -34,3 +34,11 @@ def run_in_executor(func):
 
 def chunk(iterable, *, chunk_size):
     return [iterable[i:i + chunk_size] for i in range(0, len(iterable), chunk_size)]
+
+
+def set_global_variable(name, value):
+    globals()[name] = value
+
+
+def get_global_variable(name):
+    return globals()[name]

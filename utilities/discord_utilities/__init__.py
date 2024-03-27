@@ -16,6 +16,7 @@ from .paginator import Paginator, PaginatorBehaviour, embed_creator
 # from .get_interaction_from_context import get_interaction_from_context
 from .utils import get_image_url
 from .installable import InstallContext, Context, magic_sync
+from .toggle_button import ToggleButton
 
 
 def convert_to_file(txt: str | bytes, filename: str):
@@ -24,6 +25,13 @@ def convert_to_file(txt: str | bytes, filename: str):
         return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
     else:
         return discord.File(io.BytesIO(txt), filename=filename)
+
+
+async def load_extensions(bot, path_to_extensions, *, func=lambda i: None):
+    for ext in os.listdir(path_to_extensions):
+        if ext.endswith(".py"):
+            await bot.load_extension(f"{path_to_extensions.replace('/', '/')}.{ext[:-3]}")
+            func(ext)
 
 
 async def can_dm(user: discord.Member | discord.User):
