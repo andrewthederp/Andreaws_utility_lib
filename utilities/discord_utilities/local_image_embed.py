@@ -94,7 +94,7 @@ class LocalImageEmbed(discord.Embed):
         return self
 
     def set_author(self, *, name: str, url: str | None = None, icon_url: type_hint | None = None):
-        if isinstance(icon_url, (str, None)):
+        if isinstance(icon_url, str | None):
             super().set_author(name=name, url=url, icon_url=icon_url)
         elif isinstance(icon_url, discord.File):
             super().set_author(name=name, url=url, icon_url="attachment://" + icon_url.filename)
@@ -113,7 +113,7 @@ class LocalImageEmbed(discord.Embed):
         return self
 
     def set_footer(self, *, text: str | None = None, icon_url: type_hint | None = None):
-        if isinstance(icon_url, (str, None)):
+        if isinstance(icon_url, str | None):
             super().set_footer(text=text, icon_url=icon_url)
         elif isinstance(icon_url, discord.File):
             super().set_footer(text=text, icon_url="attachment://" + icon_url.filename)
