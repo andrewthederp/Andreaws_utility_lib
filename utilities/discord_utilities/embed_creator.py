@@ -54,7 +54,7 @@ class EmbedCreator(discord.ui.View):
             return True
 
     @discord.ui.button(label="Title", style=discord.ButtonStyle.blurple)
-    async def title_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def title_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             title = values.get("title")
 
@@ -74,7 +74,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Description", style=discord.ButtonStyle.blurple)
-    async def description_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def description_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             description = values.get("description")
 
@@ -93,7 +93,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Color", style=discord.ButtonStyle.blurple)
-    async def color_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def color_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             color = values.get("color")
 
@@ -119,7 +119,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Title url", style=discord.ButtonStyle.blurple)
-    async def title_url_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def title_url_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             url = values.get("title url")
 
@@ -143,7 +143,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Timestamp", style=discord.ButtonStyle.blurple)
-    async def timestamp_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def timestamp_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             timestamp = values.get("timestamp")
             if timestamp:
@@ -176,7 +176,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Add field", style=discord.ButtonStyle.blurple, row=2)
-    async def add_field_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def add_field_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             name = values["field name"]
             value = values["field value"]
@@ -201,7 +201,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Insert Field at", style=discord.ButtonStyle.blurple, row=2, disabled=True)
-    async def insert_field_at_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def insert_field_at_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             name = values["field name"]
             value = values["field value"]
@@ -239,7 +239,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Edit Field", style=discord.ButtonStyle.blurple, row=2, disabled=True)
-    async def edit_field_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def edit_field_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
 
             try:
@@ -278,7 +278,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Remove field at", style=discord.ButtonStyle.red, row=2, disabled=True)
-    async def remove_field_at_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def remove_field_at_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             try:
                 position = int(values["field position"])
@@ -306,7 +306,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Clear Fields", style=discord.ButtonStyle.red, row=2, disabled=True)
-    async def clear_all_fields_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def clear_all_fields_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         view = Confirm(user=interaction.user)
         await interaction.response.send_message(
             content="Are you sure you want to clear all fields?", view=view,
@@ -322,7 +322,7 @@ class EmbedCreator(discord.ui.View):
             self.embed_versions.append(self.embed.copy())
 
     @discord.ui.button(label="Author", style=discord.ButtonStyle.blurple, row=3)
-    async def author_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def author_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             name = values.get('author name')
             url = values.get('author url')
@@ -350,7 +350,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Thumbnail", style=discord.ButtonStyle.blurple, row=3)
-    async def thumbnail_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def thumbnail_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             thumbnail_url = values.get('thumbnail url')
             self.embed.set_thumbnail(url=get_image_url(inter, thumbnail_url))
@@ -369,7 +369,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Image", style=discord.ButtonStyle.blurple, row=3)
-    async def image_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def image_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             image_url = values.get('image url')
             self.embed.set_image(url=get_image_url(inter, image_url))
@@ -388,7 +388,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(label="Footer", style=discord.ButtonStyle.blurple, row=3)
-    async def footer_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def footer_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         async def modal_callback(inter, values):
             text = values.get('footer text')
             icon_url = values.get('footer icon url')
@@ -416,7 +416,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.send_modal(modal)
 
     @discord.ui.button(emoji="⬅️", style=discord.ButtonStyle.green, row=4, disabled=True)
-    async def previous_embed_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def previous_embed_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.current_embed_pos -= 1
         if self.current_embed_pos == 0:
             self.previous_embed_button.disabled = True
@@ -438,7 +438,7 @@ class EmbedCreator(discord.ui.View):
         await interaction.response.edit_message(embed=self.embed, view=self)
 
     @discord.ui.button(emoji="➡️", style=discord.ButtonStyle.green, row=4, disabled=True)
-    async def next_embed_button(self, interaction: discord.Interaction, _: discord.Button):
+    async def next_embed_button(self, interaction: discord.Interaction, _: discord.ui.Button):
         self.current_embed_pos += 1
         if self.current_embed_pos == len(self.embed_versions) - 1:
             self.next_embed_button.disabled = True

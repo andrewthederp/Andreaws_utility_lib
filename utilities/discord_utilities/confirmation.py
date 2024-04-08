@@ -23,7 +23,7 @@ class Confirm(discord.ui.View):
         return interaction.user == self.user
 
     @discord.ui.button(label='Yes', style=discord.ButtonStyle.green)
-    async def yes_button(self, interaction: discord.Interaction, button: discord.Button):
+    async def yes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
         self.answer = True
 
@@ -33,7 +33,7 @@ class Confirm(discord.ui.View):
             await interaction.message.delete()
 
     @discord.ui.button(label='No', style=discord.ButtonStyle.red)
-    async def no_button(self, interaction: discord.Interaction, button: discord.Button):
+    async def no_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.stop()
         self.answer = False
 
