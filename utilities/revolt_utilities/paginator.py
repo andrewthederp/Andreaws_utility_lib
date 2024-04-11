@@ -19,7 +19,10 @@ async def goto_page(paginator, user):
 
     try:
         message = await paginator.client.wait_for('message', check=lambda m: m.author.id == user.id and paginator.message.channel == m.channel, timeout=20)
-        to_delete.append(message)
+        try:
+            await message.delete()
+        except revolt.HTTPError:
+            pass
     except asyncio.TimeoutError:
         await original_message.delete()
     else:
