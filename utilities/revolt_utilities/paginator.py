@@ -117,9 +117,14 @@ class Paginator:
                 if user == self.client.user:
                     continue
 
-                function = self.buttons[reaction_id]
+                function = self.buttons.get(reaction_id)
+                if not function:
+                    continue
 
-                await message.remove_reaction(reaction_id, user)
+                try:
+                    await message.remove_reaction(reaction_id, user)
+                except revolt.HTTPError:
+                    pass
 
                 await self.before_callback()
                 do_break = await function(self, user)
