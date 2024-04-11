@@ -1,6 +1,7 @@
 import discord
 
 import os
+import io
 
 try:
     import jishaku
@@ -20,7 +21,6 @@ from .toggle_button import ToggleButton
 
 
 def convert_to_file(txt: str | bytes, filename: str):
-    import io
     if isinstance(txt, str):
         return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
     else:
@@ -30,7 +30,7 @@ def convert_to_file(txt: str | bytes, filename: str):
 async def load_extensions(bot, path_to_extensions, *, func=lambda i: None):
     for ext in os.listdir(path_to_extensions):
         if ext.endswith(".py"):
-            await bot.load_extension(f"{path_to_extensions.replace('/', '/')}.{ext[:-3]}")
+            await bot.load_extension(f"{path_to_extensions.replace('/', '.')}.{ext[:-3]}")
             func(ext)
 
 

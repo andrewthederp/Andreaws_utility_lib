@@ -1,7 +1,12 @@
 try:
     import discord
-    # from utilities.discord_utilities.embed_creator import *
     from .discord_utilities import *
+except ImportError:
+    pass
+
+try:
+    import revolt
+    from .revolt_utilities import *
 except ImportError:
     pass
 

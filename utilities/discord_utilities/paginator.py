@@ -182,10 +182,10 @@ class Paginator(discord.ui.View):
                 else:
                     child.disabled = False
 
-        print(self.current_page)
         page = self.pages[self.current_page]
         if isinstance(page, dict):
-            await interaction.response.edit_message(view=self, **kwargs)
+            page['view'] = self
+            await interaction.response.edit_message(**page)
         elif isinstance(page, discord.Embed):
             await interaction.response.edit_message(embed=page, view=self)
         elif isinstance(page, discord.File):
