@@ -110,9 +110,10 @@ class Paginator:
         elif isinstance(page, str):
             dct['content'] = page
 
-        self.message = await destination.send(**dct)
-        for emoji in self.buttons:
-            await self.message.add_reaction(emoji)
+        interactions = revolt.MessageInteractions(reactions=list(self.buttons.keys()))
+        self.message = await destination.send(**dct, interactions=interactions)
+        # for emoji in self.buttons:
+        #     await self.message.add_reaction(emoji)
 
         while True:
             try:
