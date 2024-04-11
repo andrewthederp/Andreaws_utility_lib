@@ -132,11 +132,12 @@ class Paginator:
 
                 await self.before_callback()
                 do_break = await function(self, user)
-                await self.edit_paginator()
-                await self.after_callback()
 
                 if do_break:
                     break
+                else:
+                    await self.edit_paginator()
+                    await self.after_callback()
             except asyncio.TimeoutError:
                 break
 
