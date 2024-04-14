@@ -81,7 +81,7 @@ class View:
             if await self.interaction_check(interaction):
                 await child.callback(interaction)
         except Exception as e:
-            await self.on_error(interaction, e, button)
+            await self.on_error(interaction, e, child)
 
     async def send(self, dest, *args, **kwargs):
         kwargs['interactions'] = revolt.MessageInteractions(reactions=[i.emoji_id for i in self.children])
