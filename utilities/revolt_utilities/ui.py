@@ -80,11 +80,11 @@ class View:
 
     async def send(self, dest, *args, **kwargs):
         kwargs['interactions'] = revolt.MessageInteractions(reactions=[i.emoji_id for i in self.children])
-        await dest.send(*args, **kwargs)
+        main_message = await dest.send(*args, **kwargs)
 
         while True:
             try:
-                message, user, reaction_id = await self.client.wait_for('reaction_add', timeout=self.timeout)
+                message, user, reaction_id = await self.client.wait_for('reaction_add', timeout=self.timeout, check=lambda m, _, __: m.id == main_message.id)
                 interaction = Interaction(message, user)
                 for child in self.children:
                     if child.emoji_id == reaction_id:
