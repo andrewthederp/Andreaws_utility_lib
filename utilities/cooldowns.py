@@ -10,10 +10,9 @@ class OnCooldown(Exception):
 
 
 class Bucket:
-    def __init__(self, rate, per, cooldown):
+    def __init__(self, rate, per):
         self.rate = rate
         self.per = per
-        self.cooldown = cooldown
 
         self.times = set()
         self.on_cooldown: bool | float = False
@@ -66,7 +65,7 @@ class Cooldown:
         bucket = self._cache.get(key)
 
         if bucket is None:
-            bucket = Bucket(self._rate, self._per, 0)
+            bucket = Bucket(self._rate, self._per)
             self._cache[key] = bucket
 
         return bucket
