@@ -1,5 +1,5 @@
 import os
-
+from typing import Tuple
 from .color_utilities import convert_to_color, rgb_or_rgba_or_hex_typehint
 
 RESET = "\033[0m"
@@ -19,8 +19,8 @@ def print_rgb(
         text: str,
         fg_color: rgb_or_rgba_or_hex_typehint = False,
         bg_color: rgb_or_rgba_or_hex_typehint = False,
-        return_string: bool = False
-):
+        return_string: bool = False,
+) -> str | None:
     string = ''
 
     if fg_color:
@@ -34,6 +34,45 @@ def print_rgb(
         return string + text + RESET
     else:
         print(string + text + RESET)
+
+
+def lerp(start_color: Tuple[int, int, int], end_color: Tuple[int, int, int], t: float) -> Tuple[int, int, int]:
+    lerped_color = tuple(int(start + (end - start) * t) for start, end in zip(start_color, end_color))
+    return lerped_color
+
+
+def print_gradient(
+        text: str,
+        start_fg_color: Tuple[int, int, int] = False,
+        end_fg_color: Tuple[int, int, int] = False,
+        start_bg_color: Tuple[int, int, int] = False,
+        end_bg_color: Tuple[int, int, int] = False,
+        return_string: bool = False
+) -> str | None:
+    if any([start_fg_color, end_fg_color]) and not all([start_fg_color, end_fg_color]):
+        raise ValueError("Need to provide both a starting and ending foreground color")
+
+    if any([start_bg_color, end_bg_color]) and not all([start_bg_color, end_bg_color]):
+        raise ValueError("Need to provide both a starting and ending background color")
+
+    string = ''
+    for i, letter in enumerate(text):
+        fg_rgb = False
+        bg_rgb = False
+
+        if start_fg_color:
+            fg_rgb = lerp(start_fg_color, end_fg_color, i / len(text))
+        if start_bg_color:
+            bg_rgb = lerp(start_bg_color, end_bg_color, i / len(text))
+
+        string += print_rgb(letter, fg_color=fg_rgb, bg_color=bg_rgb, return_string=True)
+
+    string += RESET
+
+    if return_string:
+        return string
+    else:
+        print(string)
 
 
 def clear_screen():

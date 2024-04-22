@@ -19,3 +19,4 @@ from .cli_utilities import *
 from .color_utilities import *
 from .math_utilities import *
 from .misc import *
+from .cooldowns import Cooldown
