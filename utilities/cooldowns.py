@@ -10,17 +10,16 @@ class OnCooldown(Exception):
 
 
 class Bucket:
-    def __init__(self, rate, per, cooldown):
+    def __init__(self, rate, per):
         self.rate = rate
         self.per = per
-        self.cooldown = cooldown
 
-        self.times = []
+        self.times = set()
         self.on_cooldown: bool | float = False
 
     def _clear_times(self):
         current = time.monotonic()
-        self.times = [t for t in self.times if current - t < self.cooldown]
+        self.times = {t for t in self.times if current - t < self.per}
         return self.times
 
     def add_time(self):
@@ -31,10 +30,10 @@ class Bucket:
             raise OnCooldown(self.on_cooldown - time_to_add)
 
         if sum([time_to_add - t < self.per for t in self.times]) >= self.rate:
-            self.on_cooldown = time_to_add + self.cooldown
-            raise OnCooldown(self.cooldown)
+            self.on_cooldown = time_to_add + self.per
+            raise OnCooldown(self.per)
         else:
-            self.times.append(time_to_add)
+            self.times.add(time_to_add)
 
 
 class Cooldown:
@@ -43,11 +42,9 @@ class Cooldown:
             *,
             rate: int,
             per: int,
-            cooldown: float,
     ):
         self._rate = rate
         self._per = per
-        self._cooldown = cooldown
         self._cache = {}
 
     def _clean_buckets(self):
@@ -69,7 +66,7 @@ class Cooldown:
         bucket = self._cache.get(key)
 
         if bucket is None:
-            bucket = Bucket(self._rate, self._per, self._cooldown)
+            bucket = Bucket(self._rate, self._per, 0)
             self._cache[key] = bucket
 
         return bucket
