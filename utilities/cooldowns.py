@@ -10,9 +10,10 @@ class OnCooldown(Exception):
 
 
 class Bucket:
-    def __init__(self, rate, per):
+    def __init__(self, rate, per, cooldown):
         self.rate = rate
         self.per = per
+        self.cooldown = cooldown
 
         self.times = set()
         self.on_cooldown: bool | float = False
@@ -29,11 +30,10 @@ class Bucket:
         if self.on_cooldown is not False:
             raise OnCooldown(self.on_cooldown - time_to_add)
 
-        if sum([time_to_add - t < self.per for t in self.times]) >= self.rate:
+        num = sum([time_to_add - t < self.per for t in self.times])
+        if num == self.rate - 1:
             self.on_cooldown = time_to_add + self.per
-            raise OnCooldown(self.per)
-        else:
-            self.times.add(time_to_add)
+        self.times.add(time_to_add)
 
 
 class Cooldown:
