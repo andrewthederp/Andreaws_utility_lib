@@ -16,9 +16,6 @@ class PaginatorBehaviour:
 
 
 class DisablePaginator(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
         view.stop()
@@ -28,9 +25,6 @@ class DisablePaginator(discord.ui.Button["Paginator"]):
 
 
 class DeletePaginator(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
         view.stop()
@@ -43,9 +37,6 @@ class DeletePaginator(discord.ui.Button["Paginator"]):
 
 
 class EndPaginator(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
         view.stop()
@@ -53,24 +44,20 @@ class EndPaginator(discord.ui.Button["Paginator"]):
 
 
 class FirstPage(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
+        old_page = view.current_page
         view.current_page = 0
 
-        await view.before_callback(interaction)
+        await view.before_callback(interaction, self, old_page)
         await view.edit_paginator(interaction)
-        await view.after_callback(interaction)
+        await view.after_callback(interaction, self, old_page)
 
 
 class PreviousPage(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
+        old_page = view.current_page
         view.current_page -= 1
         if view.paginator_behaviour == PaginatorBehaviour.loop_around and view.current_page == -1:
             view.current_page = len(view.pages) - 1
@@ -78,20 +65,16 @@ class PreviousPage(discord.ui.Button["Paginator"]):
             view.current_page = 0
             return await interaction.response.send_message(content=f"You can't do that!", ephemeral=True)
 
-        await view.before_callback(interaction)
+        await view.before_callback(interaction, self, old_page)
         await view.edit_paginator(interaction)
-        await view.after_callback(interaction)
+        await view.after_callback(interaction, self, old_page)
 
 
 class ShowPage(discord.ui.Button["Paginator"]):
-    def __init__(self, style, row, emoji):
-        super().__init__(label="1", style=style, row=row, emoji=emoji, disabled=True)
+    ...
 
 
 class GotoPage(discord.ui.Button["Paginator"]):
-    def __init__(self, style, row, emoji):
-        super().__init__(label="1", style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
 
@@ -100,20 +83,19 @@ class GotoPage(discord.ui.Button["Paginator"]):
             if not page.isdigit() or int(page)-1 not in range(len(view.pages)):
                 return await inter.response.send_message(content="That's not a valid number!")
             else:
+                old_page = view.current_page
                 view.current_page = int(page) - 1
-                await view.before_callback(inter)
+                await view.before_callback(inter, self, old_page)
                 await view.edit_paginator(inter)
-                await view.after_callback(inter)
+                await view.after_callback(inter, self, old_page)
 
         await interaction.response.send_modal(MakeModal(title="Page number", callback=modal_callback, inputs=[discord.ui.TextInput(label="Page?", placeholder=f"Give a number between 1-{len(view.pages)}")]))
 
 
 class NextPage(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
+        old_page = view.current_page
         view.current_page += 1
         if view.paginator_behaviour == PaginatorBehaviour.loop_around and view.current_page == len(view.pages):
             view.current_page = 0
@@ -121,22 +103,20 @@ class NextPage(discord.ui.Button["Paginator"]):
             view.current_page = len(view.pages) - 1
             return await interaction.response.send_message(content=f"You can't do that!", ephemeral=True)
 
-        await view.before_callback(interaction)
+        await view.before_callback(interaction, self, old_page)
         await view.edit_paginator(interaction)
-        await view.after_callback(interaction)
+        await view.after_callback(interaction, self, old_page)
 
 
 class LastPage(discord.ui.Button["Paginator"]):
-    def __init__(self, label, style, row, emoji):
-        super().__init__(label=label, style=style, row=row, emoji=emoji)
-
     async def callback(self, interaction):
         view = self.view
+        old_page = view.current_page
         view.current_page = len(view.pages) - 1
 
-        await view.before_callback(interaction)
+        await view.before_callback(interaction, self, old_page)
         await view.edit_paginator(interaction)
-        await view.after_callback(interaction)
+        await view.after_callback(interaction, self, old_page)
 
 
 class Paginator(discord.ui.View):
@@ -161,10 +141,10 @@ class Paginator(discord.ui.View):
     async def on_timeout(self):
         self.stop()
 
-    async def before_callback(self, interaction):
+    async def before_callback(self, interaction: discord.Interaction, button: discord.ui.Button, previous_page: int):
         pass
 
-    async def after_callback(self, interaction):
+    async def after_callback(self, interaction: discord.Interaction, button: discord.ui.Button, previous_page: int):
         pass
 
     async def edit_paginator(self, interaction):
@@ -224,42 +204,43 @@ class Paginator(discord.ui.View):
             style: discord.ButtonStyle = discord.ButtonStyle.secondary,
             row: typing.Optional[int] = None,
             emoji: typing.Optional[typing.Union[str, discord.Emoji, discord.PartialEmoji]] = None,
+            custom_id: str = None
     ):
         button = None
         if action == "first":
-            button = FirstPage(label, style, row, emoji)
+            button = FirstPage(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == 0:
                 button.disabled = True
             self.add_item(button)
         elif action == "previous":
-            button = PreviousPage(label, style, row, emoji)
+            button = PreviousPage(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == 0:
                 button.disabled = True
             self.add_item(button)
         elif action == "show":
-            button = ShowPage(style, row, emoji)
+            button = ShowPage(label="1", disabled=True, style=style, row=row, emoji=emoji, custom_id=custom_id)
             self.add_item(button)
         elif action == "goto":
-            button = GotoPage(style, row, emoji)
+            button = GotoPage(label="1", style=style, row=row, emoji=emoji, custom_id=custom_id)
             self.add_item(button)
         elif action == "next":
-            button = NextPage(label, style, row, emoji)
+            button = NextPage(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == len(self.pages)-1:
                 button.disabled = True
             self.add_item(button)
         elif action == "last":
-            button = LastPage(label, style, row, emoji)
+            button = LastPage(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             if self.paginator_behaviour == PaginatorBehaviour.disable and self.current_page == len(self.pages)-1:
                 button.disabled = True
             self.add_item(button)
         elif action == "delete":
-            button = DeletePaginator(label, style, row, emoji)
+            button = DeletePaginator(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             self.add_item(button)
         elif action == "disable":
-            button = DisablePaginator(label, style, row, emoji)
+            button = DisablePaginator(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             self.add_item(button)
         elif action == "end":
-            button = EndPaginator(label, style, row, emoji)
+            button = EndPaginator(label=label, style=style, row=row, emoji=emoji, custom_id=custom_id)
             self.add_item(button)
 
         return button
