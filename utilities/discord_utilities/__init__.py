@@ -16,7 +16,6 @@ from .columned_view import ColumnedView, ColumnedButton, columned_button, make_v
 from .paginator import Paginator, PaginatorBehaviour, embed_creator
 # from .get_interaction_from_context import get_interaction_from_context
 from .utils import get_image_url
-from .installable import InstallContext, Context, magic_sync
 from .toggle_button import ToggleButton
 
 
