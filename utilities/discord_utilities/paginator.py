@@ -50,8 +50,9 @@ class FirstPage(discord.ui.Button["Paginator"]):
         view.current_page = 0
 
         await view.before_callback(interaction, self, old_page)
-        await view.edit_paginator(interaction)
-        await view.after_callback(interaction, self, old_page)
+        if interaction.is_expired() is False:
+            await view.edit_paginator(interaction)
+            await view.after_callback(interaction, self, old_page)
 
 
 class PreviousPage(discord.ui.Button["Paginator"]):
@@ -66,8 +67,9 @@ class PreviousPage(discord.ui.Button["Paginator"]):
             return await interaction.response.send_message(content=f"You can't do that!", ephemeral=True)
 
         await view.before_callback(interaction, self, old_page)
-        await view.edit_paginator(interaction)
-        await view.after_callback(interaction, self, old_page)
+        if interaction.is_expired() is False:
+            await view.edit_paginator(interaction)
+            await view.after_callback(interaction, self, old_page)
 
 
 class ShowPage(discord.ui.Button["Paginator"]):
@@ -86,8 +88,9 @@ class GotoPage(discord.ui.Button["Paginator"]):
                 old_page = view.current_page
                 view.current_page = int(page) - 1
                 await view.before_callback(inter, self, old_page)
-                await view.edit_paginator(inter)
-                await view.after_callback(inter, self, old_page)
+                if inter.is_expired() is False:
+                    await view.edit_paginator(inter)
+                    await view.after_callback(inter, self, old_page)
 
         await interaction.response.send_modal(MakeModal(title="Page number", callback=modal_callback, inputs=[discord.ui.TextInput(label="Page?", placeholder=f"Give a number between 1-{len(view.pages)}")]))
 
@@ -104,8 +107,9 @@ class NextPage(discord.ui.Button["Paginator"]):
             return await interaction.response.send_message(content=f"You can't do that!", ephemeral=True)
 
         await view.before_callback(interaction, self, old_page)
-        await view.edit_paginator(interaction)
-        await view.after_callback(interaction, self, old_page)
+        if interaction.is_expired() is False:
+            await view.edit_paginator(interaction)
+            await view.after_callback(interaction, self, old_page)
 
 
 class LastPage(discord.ui.Button["Paginator"]):
@@ -115,8 +119,9 @@ class LastPage(discord.ui.Button["Paginator"]):
         view.current_page = len(view.pages) - 1
 
         await view.before_callback(interaction, self, old_page)
-        await view.edit_paginator(interaction)
-        await view.after_callback(interaction, self, old_page)
+        if interaction.is_expired() is False:
+            await view.edit_paginator(interaction)
+            await view.after_callback(interaction, self, old_page)
 
 
 class Paginator(discord.ui.View):
