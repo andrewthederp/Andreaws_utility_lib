@@ -2,6 +2,8 @@ import discord
 
 import os
 import io
+from discord.ext import commands
+import re
 
 try:
     import jishaku
@@ -14,9 +16,26 @@ from .modal_creator import MakeModal
 from .local_image_embed import LocalImageEmbed, make_embeds_support_local_images, unmake_embeds_support_local_images
 from .columned_view import ColumnedView, ColumnedButton, columned_button, make_views_columned, make_views_uncolumned
 from .paginator import Paginator, PaginatorBehaviour, embed_creator
-# from .get_interaction_from_context import get_interaction_from_context
 from .utils import get_image_url
 from .toggle_button import ToggleButton
+
+
+class MoneyConverter(commands.Converter):
+    get_money = NotImplemented
+
+    async def convert(self, ctx: commands.Context, amount: str):
+        amount = amount.lower()
+        if self.get_money is not NotImplemented:
+            max_amount = await discord.utils.maybe_coroutine(self.get_money(ctx))
+            amount = amount.replace("max", f"{max_amount}")
+            amount = amount.replace("all", f"{max_amount}")
+            amount = amount.replace("half", f"{max_amount // 2}")
+
+        amount = re.sub(r"[^0-9ek.]", r"", amount)
+        amount = amount.replace(".0", "")
+        amount = amount.replace("k", "*1000")
+        amount = amount.replace("e", "*10**")
+        return eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
 
 
 def convert_to_file(txt: str | bytes, filename: str):
@@ -54,10 +73,3 @@ if jishaku:
         os.environ.setdefault("JISHAKU_USE_ANSI_NEVER", "1")
 else:
     set_preferred_jishaku_flags = NotImplemented
-
-    # amount = amount.replace("max", f"{max_amt}")
-    # amount = amount.replace("all", f"{max_amt}")
-    # amount = re.sub(r"[^0-9ekEK.]", r"", amount)
-    # amount = amount.replace(".0", "")
-    # amount = amount.replace("k", "*1000")
-    # amount = amount.replace("e", "*10**")
