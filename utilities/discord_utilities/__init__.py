@@ -23,36 +23,49 @@ from .toggle_button import ToggleButton
 class MoneyConverter(commands.Converter):
     get_money = NotImplemented
 
-    async def convert(self, ctx: commands.Context, amount: str):
-        amount = amount.lower()
+    def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False):
+        self.allow_negative = allow_negative
+        self.allow_zero = allow_zero
+
+    async def convert(self, ctx: commands.Context, original_amount: str) -> int | float:
+        amount = original_amount.lower()
         if self.get_money is not NotImplemented:
             max_amount = await discord.utils.maybe_coroutine(self.get_money(ctx))
             amount = amount.replace("max", f"{max_amount}")
             amount = amount.replace("all", f"{max_amount}")
             amount = amount.replace("half", f"{max_amount // 2}")
 
-        amount = re.sub(r"[^0-9ek.]", r"", amount)
-        amount = amount.replace(".0", "")
-        amount = amount.replace("k", "*1000")
+        amount = re.sub(r"[^0-9ek.]", "", amount)
+        amount = amount.replace("k", "000")
         amount = amount.replace("e", "*10**")
-        return eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+        try:
+            if amount == 0 and not self.allow_zero:
+                raise commands.BadArgument(f"{original_amount} must be a positive number")
+
+            if amount < 0 and not self.allow_negative:
+                raise commands.BadArgument(f"{original_amount} must be a positive number{' or zero' if self.allow_zero else ''}")
+
+            amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+            return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
+        except:
+            raise commands.BadArgument(f"{original_amount} could not be converted into an integer")
 
 
-def convert_to_file(txt: str | bytes, filename: str):
+def convert_to_file(txt: str | bytes, filename: str) -> discord.File:
     if isinstance(txt, str):
         return discord.File(io.BytesIO(txt.encode('utf-8')), filename=filename)
     else:
         return discord.File(io.BytesIO(txt), filename=filename)
 
 
-async def load_extensions(bot, path_to_extensions, *, func=lambda i: None):
+async def load_extensions(bot, path_to_extensions, *, func=lambda i: None) -> None:
     for ext in os.listdir(path_to_extensions):
         if ext.endswith(".py"):
             await bot.load_extension(f"{path_to_extensions.replace('/', '.')}.{ext[:-3]}")
             func(ext)
 
 
-async def can_dm(user: discord.Member | discord.User):
+async def can_dm(user: discord.Member | discord.User) -> bool:
     try:
         await user.send()
     except discord.Forbidden:
