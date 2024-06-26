@@ -1,6 +1,6 @@
 import os
 from typing import Tuple
-from color_utilities import convert_to_color, rgb_or_rgba_or_hex_typehint
+from .color_utilities import convert_to_color, rgb_or_rgba_or_hex_typehint
 
 RESET = "\033[0m"
 BOLD = "\033[1m"
