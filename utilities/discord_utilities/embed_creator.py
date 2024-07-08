@@ -1,7 +1,8 @@
+import copy
 import datetime
 
 import discord
-import copy
+from discord.ext import commands
 
 from .confirmation import Confirm
 from .modal_creator import MakeModal
@@ -34,7 +35,7 @@ class EmbedCreator(discord.ui.View):
             self.next_embed_button.disabled = True
             self.previous_embed_button.disabled = False
             await interaction.response.edit_message(embed=self.embed, view=self)
-        except Exception as _:
+        except Exception:
             self.embed = self.embed_versions[-1]
             await interaction.response.send_message(content="Could not edit the embed", ephemeral=True)
             return False
@@ -42,7 +43,6 @@ class EmbedCreator(discord.ui.View):
             embed_amt = len(self.embed_versions)
 
             if self.current_embed_pos != embed_amt - 1:
-                print(self.embed_versions[:self.current_embed_pos])
                 self.embed_versions = self.embed_versions[:self.current_embed_pos]
 
             self.current_embed_pos = len(self.embed_versions)
@@ -98,9 +98,11 @@ class EmbedCreator(discord.ui.View):
             color = values.get("color")
 
             if color:
-                r, g, b, _ = convert_to_color(color)
-                color = discord.Color.from_rgb(r, g, b)
-                self.embed.colour = color
+                try:
+                    color = await commands.ColorConverter().convert(None, color)
+                    self.embed.colour = color
+                except commands.BadColourArgument:
+                    return await inter.response.send_message(content="That's not a valid color", ephemeral=True)
             else:
                 self.embed.colour = None
 
@@ -182,9 +184,6 @@ class EmbedCreator(discord.ui.View):
             value = values["field value"]
             inline = bool(values.get("field inline"))
 
-            if self.embed.title == "** **":
-                self.embed.title = None
-
             self.embed.add_field(name=name, value=value, inline=inline)
             await self.edit_message(inter)
 
@@ -218,9 +217,6 @@ class EmbedCreator(discord.ui.View):
                 self.embed.insert_field_at(position, name=name, value=value, inline=inline)
             except IndexError:
                 return await inter.response.send_message("Invalid position", ephemeral=True)
-            else:
-                if self.embed.title == "** **":
-                    self.embed.title = None
 
             await inter.response.edit_message(embed=self.embed, view=self)
 
@@ -258,9 +254,6 @@ class EmbedCreator(discord.ui.View):
                 self.embed.set_field_at(position, name=name, value=value, inline=inline)
             except IndexError:
                 return await inter.response.send_message("Invalid position", ephemeral=True)
-            else:
-                if self.embed.title == "** **":
-                    self.embed.title = None
 
             await self.edit_message(inter)
 
@@ -290,9 +283,6 @@ class EmbedCreator(discord.ui.View):
             except IndexError:
                 return await inter.response.send_message("Invalid position", ephemeral=True)
 
-            if not self.embed:
-                self.embed.title = "** **"
-
             await self.edit_message(inter)
 
         modal = MakeModal(
@@ -318,7 +308,8 @@ class EmbedCreator(discord.ui.View):
             self.embed.clear_fields()
             if not self.embed:
                 self.embed.title = "** **"
-            await interaction.followup.edit_message(interaction.message.id, embed=self.embed, view=self)
+
+            await interaction.edit_original_response(embed=self.embed, view=self)
             self.embed_versions.append(self.embed.copy())
 
     @discord.ui.button(label="Author", style=discord.ButtonStyle.blurple, row=3)
