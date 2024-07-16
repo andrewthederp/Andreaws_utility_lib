@@ -55,7 +55,7 @@ class Tabulate:
             raise ValueError(f"row data must be {column_count} columns big!")
 
         self.rows.append(row_data)
-        self.widths = [max(len(i), self.widths[n]) for n, i in enumerate(row_data)]
+        self.widths = [max(len(str(i)), self.widths[n]) for n, i in enumerate(row_data)]
 
     def format(self):
         sep = "\u2533".join("\u2501" * (w + 2) for w in self.widths)
