@@ -1,9 +1,10 @@
-import discord
-
-import os
 import io
-from discord.ext import commands
+import os
 import re
+
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 try:
     import jishaku
@@ -22,6 +23,9 @@ from .toggle_button import ToggleButton
 
 class MoneyConverter(commands.Converter):
     get_money = NotImplemented
+
+    allow_negative: bool = False
+    allow_zero: bool = False
 
     def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False):
         self.allow_negative = allow_negative
@@ -49,6 +53,46 @@ class MoneyConverter(commands.Converter):
             return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
         except:
             raise commands.BadArgument(f"{original_amount} could not be converted into an integer")
+
+
+class MoneyTransformer(app_commands.Transformer):
+    get_money = NotImplemented
+
+    allow_negative: bool = False
+    allow_zero: bool = False
+
+    def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False):
+        self.allow_negative = allow_negative
+        self.allow_zero = allow_zero
+
+    async def transform(self, interaction: discord.Interaction, original_amount: str) -> int | float:
+        amount = original_amount.lower()
+        if self.get_money is not NotImplemented:
+            max_amount = await discord.utils.maybe_coroutine(self.get_money(interaction))
+            amount = amount.replace("max", f"{max_amount}")
+            amount = amount.replace("all", f"{max_amount}")
+            amount = amount.replace("half", f"{max_amount // 2}")
+
+        amount = re.sub(r"[^0-9ek.]", "", amount)
+        amount = amount.replace("k", "000")
+        amount = amount.replace("e", "*10**")
+        try:
+            if amount == 0 and not self.allow_zero:
+                raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+
+            if amount < 0 and not self.allow_negative:
+                raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+
+            amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+            return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
+        except:
+            raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+
+
+class PartialMember(discord.Member):
+    def __init__(self, *, guild: discord.Guild, member_id: int):
+        self.guild = guild
+        self.id = member_id
 
 
 def convert_to_file(txt: str | bytes, filename: str) -> discord.File:
