@@ -34,7 +34,7 @@ class MoneyConverter(commands.Converter):
     async def convert(self, ctx: commands.Context, original_amount: str) -> int | float:
         amount = original_amount.lower()
         if self.get_money is not NotImplemented:
-            max_amount = await discord.utils.maybe_coroutine(self.get_money(ctx))
+            max_amount = await discord.utils.maybe_coroutine(self.get_money, ctx)
             amount = amount.replace("max", f"{max_amount}")
             amount = amount.replace("all", f"{max_amount}")
             amount = amount.replace("half", f"{max_amount // 2}")
@@ -68,7 +68,7 @@ class MoneyTransformer(app_commands.Transformer):
     async def transform(self, interaction: discord.Interaction, original_amount: str) -> int | float:
         amount = original_amount.lower()
         if self.get_money is not NotImplemented:
-            max_amount = await discord.utils.maybe_coroutine(self.get_money(interaction))
+            max_amount = await discord.utils.maybe_coroutine(self.get_money, interaction)
             amount = amount.replace("max", f"{max_amount}")
             amount = amount.replace("all", f"{max_amount}")
             amount = amount.replace("half", f"{max_amount // 2}")
