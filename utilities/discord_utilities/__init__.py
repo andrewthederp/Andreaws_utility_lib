@@ -43,13 +43,14 @@ class MoneyConverter(commands.Converter):
         amount = amount.replace("k", "000")
         amount = amount.replace("e", "*10**")
         try:
+            amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+
             if amount == 0 and not self.allow_zero:
                 raise commands.BadArgument(f"{original_amount} must be a positive number")
 
             if amount < 0 and not self.allow_negative:
                 raise commands.BadArgument(f"{original_amount} must be a positive number{' or zero' if self.allow_zero else ''}")
 
-            amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
             return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
         except:
             raise commands.BadArgument(f"{original_amount} could not be converted into an integer")
@@ -77,13 +78,14 @@ class MoneyTransformer(app_commands.Transformer):
         amount = amount.replace("k", "000")
         amount = amount.replace("e", "*10**")
         try:
+            amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+
             if amount == 0 and not self.allow_zero:
                 raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
 
             if amount < 0 and not self.allow_negative:
                 raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
 
-            amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
             return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
         except:
             raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
