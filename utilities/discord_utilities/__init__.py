@@ -24,17 +24,24 @@ from .toggle_button import ToggleButton
 class MoneyConverter(commands.Converter):
     get_money = NotImplemented
 
+    limit_to_balance: bool = False
     allow_negative: bool = False
     allow_zero: bool = False
 
-    def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False):
+    def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False, limit_to_balance: bool = False):
         self.allow_negative = allow_negative
         self.allow_zero = allow_zero
+        self.limit_to_balance = limit_to_balance
+
+        if self.limit_to_balance is True and self.get_money is NotImplemented:
+            raise Exception("Must implement get_money function to enable limit_to_balance setting.")
 
     async def convert(self, ctx: commands.Context, original_amount: str) -> int | float:
         amount = original_amount.lower()
+        balance: int | None = None
         if self.get_money is not NotImplemented:
-            max_amount = await discord.utils.maybe_coroutine(self.get_money, ctx)
+            max_amount = await discord.utils.maybe_coroutine(self.get_money, interaction)
+            balance = max_amount
             amount = amount.replace("max", f"{max_amount}")
             amount = amount.replace("all", f"{max_amount}")
             amount = amount.replace("half", f"{max_amount // 2}")
@@ -44,6 +51,9 @@ class MoneyConverter(commands.Converter):
         amount = amount.replace("e", "*10**")
         try:
             amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+
+            if self.limit_to_balance is True and isinstance(balance, int) and balance < amount:
+                raise commands.BadArgument(f"{original_amount} is more than you have.")
 
             if amount == 0 and not self.allow_zero:
                 raise commands.BadArgument(f"{original_amount} must be a positive number")
@@ -59,17 +69,25 @@ class MoneyConverter(commands.Converter):
 class MoneyTransformer(app_commands.Transformer):
     get_money = NotImplemented
 
+    limit_to_balance: bool = False
     allow_negative: bool = False
     allow_zero: bool = False
 
-    def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False):
+    def __init__(self, *, allow_negative: bool = False, allow_zero: bool = False, limit_to_balance: bool = False):
         self.allow_negative = allow_negative
         self.allow_zero = allow_zero
+        self.limit_to_balance = limit_to_balance
+
+        if self.limit_to_balance is True and self.get_money is NotImplemented:
+            raise Exception("Must implement get_money function to enable limit_to_balance setting.")
 
     async def transform(self, interaction: discord.Interaction, original_amount: str) -> int | float:
         amount = original_amount.lower()
+        balance: int | None = None
         if self.get_money is not NotImplemented:
             max_amount = await discord.utils.maybe_coroutine(self.get_money, interaction)
+            balance = max_amount
+
             amount = amount.replace("max", f"{max_amount}")
             amount = amount.replace("all", f"{max_amount}")
             amount = amount.replace("half", f"{max_amount // 2}")
@@ -79,6 +97,9 @@ class MoneyTransformer(app_commands.Transformer):
         amount = amount.replace("e", "*10**")
         try:
             amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
+
+            if self.limit_to_balance is True and isinstance(balance, int) and balance < amount:
+                raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
 
             if amount == 0 and not self.allow_zero:
                 raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
