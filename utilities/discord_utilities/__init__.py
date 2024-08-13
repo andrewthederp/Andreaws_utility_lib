@@ -40,7 +40,7 @@ class MoneyConverter(commands.Converter):
         amount = original_amount.lower()
         balance: int | None = None
         if self.get_money is not NotImplemented:
-            max_amount = await discord.utils.maybe_coroutine(self.get_money, interaction)
+            max_amount = await discord.utils.maybe_coroutine(self.get_money, ctx)
             balance = max_amount
             amount = amount.replace("max", f"{max_amount}")
             amount = amount.replace("all", f"{max_amount}")
