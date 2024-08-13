@@ -62,7 +62,7 @@ class MoneyConverter(commands.Converter):
                 raise commands.BadArgument(f"{original_amount} must be a positive number{' or zero' if self.allow_zero else ''}")
 
             return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
-        except:
+        except ValueError:
             raise commands.BadArgument(f"{original_amount} could not be converted into an integer")
 
 
@@ -108,7 +108,7 @@ class MoneyTransformer(app_commands.Transformer):
                 raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
 
             return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
-        except:
+        except ValueError:
             raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
 
 
