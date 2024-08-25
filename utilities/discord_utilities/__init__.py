@@ -99,21 +99,29 @@ class MoneyTransformer(app_commands.Transformer):
             amount = eval(amount)  # I don't think a code injection should be possible but remain wary /shrug
 
             if self.limit_to_balance is True and isinstance(balance, int) and balance < amount:
-                raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+                raise commands.BadArgument(f"{original_amount} is more than you have.")
 
             if amount == 0 and not self.allow_zero:
-                raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+                raise commands.BadArgument(f"{original_amount} must be a positive number")
 
             if amount < 0 and not self.allow_negative:
-                raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+                raise commands.BadArgument(f"{original_amount} must be a positive number{' or zero' if self.allow_zero else ''}")
 
             return int(amount) if amount == int(amount) else amount  # convert from float to int if the value will remain unchanged
         except ValueError:
-            raise app_commands.TransformerError(original_amount, discord.AppCommandOptionType.string, self)
+            raise commands.BadArgument(f"{original_amount} could not be converted into an integer")
+
+
+class PartialUser(discord.User):
+    def __init__(self, *, client: discord.Client, user_id: int):
+        self._state = client._connection
+        self.id = user_id
 
 
 class PartialMember(discord.Member):
-    def __init__(self, *, guild: discord.Guild, member_id: int):
+    def __init__(self, *, client: discord.Client, guild: discord.Guild, member_id: int, user: discord.User | None = None):
+        self._state = client._connection
+        self._user = user or PartialUser(client=client, user_id=member_id)
         self.guild = guild
         self.id = member_id
 
