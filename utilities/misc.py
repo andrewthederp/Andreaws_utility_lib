@@ -20,6 +20,7 @@ from typing import Optional, Iterable
 #
 #     return decorator
 
+
 def run_in_executor(func):
     async def wrapper(*args, **kwargs):
         loop = asyncio.get_event_loop()
@@ -31,6 +32,15 @@ def run_in_executor(func):
             return out
 
     return wrapper
+
+
+async def maybe_await(func, *args, **kwargs):
+    out = func(args, **kwargs)
+
+    if isawaitable(out):
+        out = await out
+
+    return out
 
 
 def chunk(iterable, *, chunk_size):
