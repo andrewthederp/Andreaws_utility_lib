@@ -35,7 +35,7 @@ def run_in_executor(func):
 
 
 async def maybe_await(func, *args, **kwargs):
-    out = func(args, **kwargs)
+    out = func(*args, **kwargs)
 
     if isawaitable(out):
         out = await out

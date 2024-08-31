@@ -57,7 +57,7 @@ class Command:
             name = view.get_next_word()
             for child in self.children:
                 if name in child.names:
-                    child.execute(arguments[1:], context=None)
+                    child.execute(view, context=context)
                     return
             view.undo()
 
@@ -102,7 +102,7 @@ class Command:
             name = view.get_next_word()
             for child in self.children:
                 if name in child.names:
-                    await child.async_execute(arguments[1:], context=None)
+                    await child.async_execute(view, context=context)
                     return
             view.undo()
 
