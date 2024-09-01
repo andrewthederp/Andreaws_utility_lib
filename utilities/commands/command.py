@@ -4,8 +4,8 @@ import inspect
 
 from utilities.misc import maybe_await
 from utilities.commands.view import StringView
-from utilities.commands.converter import convert
 from utilities.commands.parameter import Parameter
+from utilities.commands.converter import convert, async_convert
 from utilities.commands.errors import MissingRequiredArgument, CommandNotFound, ConversionError
 
 
