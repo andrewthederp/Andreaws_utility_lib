@@ -109,7 +109,7 @@ async def async_convert(argument: str, view: StringView, annotation: Any, contex
     annotation: Converter | callable
 
     if origin := get_origin(annotation):
-        return await maybe_await(async_handle_origin, argument, annotation, origin, context)
+        return await async_handle_origin(argument, view, annotation, origin, context)
 
     try:
         if annotation in [str, int, float]:
