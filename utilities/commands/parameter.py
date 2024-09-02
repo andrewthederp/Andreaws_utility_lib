@@ -2,12 +2,14 @@ import typing
 from inspect import Parameter
 from typing import Any, get_args, get_origin, Union
 
+empty = Parameter.empty
+
 
 class Parameter(Parameter):
-    def __init__(self, name: str, kind: Any, default: Any | None = None, annotation: Any = str, description: str = None):
+    def __init__(self, name: str, kind: Any, default: Any | empty = empty, annotation: Any = str, description: str = None):
         kwargs = {"name": name, "kind": kind, "annotation": annotation}
 
-        if default is None:
+        if default is empty:
             if origin := get_origin(annotation):
                 if origin is Union:
                     if type(None) in get_args(annotation):
@@ -18,4 +20,4 @@ class Parameter(Parameter):
         super().__init__(**kwargs)
 
         self.description = description
-        self.required = self.default is Parameter.empty
+        self.required = self.default is empty
