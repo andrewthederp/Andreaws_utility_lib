@@ -40,7 +40,7 @@ def handle_origin(argument: str, view: StringView, annotation: Any, origin: Any,
     elif origin is Annotated:
         annotated_args = get_args(annotation)
 
-        if origin := get_origin(annotated_args[0]):
+        if origin := get_origin(annotated_args[1]):
             return handle_origin(argument, view, annotated_args[1], origin, context)
         else:
             return convert(argument, view, annotated_args[1], context)
@@ -68,7 +68,7 @@ async def async_handle_origin(argument: str, view: StringView, annotation: Any, 
     elif origin is Annotated:
         annotated_args = get_args(annotation)
 
-        if origin := get_origin(annotated_args[0]):
+        if origin := get_origin(annotated_args[1]):
             return await async_handle_origin(argument, view, annotated_args[1], origin, context)
         else:
             return await async_convert(argument, view, annotated_args[1], context)

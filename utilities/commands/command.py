@@ -41,6 +41,8 @@ class Command:
         self.parent: Command | None = parent
         self.children: list[Command] = []
 
+        self.execute = self.async_execute if inspect.isasyncgenfunction(self.callback) else self.sync_execute
+
     def __repr__(self):
         return f'<Command name="{self.names[0]}">'
 
@@ -52,12 +54,12 @@ class Command:
 
         return decorator
 
-    def execute(self, view: StringView, *, context=None):
+    def sync_execute(self, view: StringView, *, context=None):
         if self.children and not view.eof:
             name = view.get_next_word()
             for child in self.children:
                 if name in child.names:
-                    child.execute(view, context=context)
+                    child.sync_execute(view, context=context)  # if the parent is sync I'll safely assume the child is too
                     return
             view.undo()
 
@@ -102,7 +104,7 @@ class Command:
             name = view.get_next_word()
             for child in self.children:
                 if name in child.names:
-                    await child.async_execute(view, context=context)
+                    await child.async_execute(view, context=context)  # if the parent is async I'll safely assume the child is too
                     return
             view.undo()
 
@@ -188,20 +190,4 @@ def process_commands(string: str, *, context=None):
     if command is None:
         raise CommandNotFound(name)
 
-    command.execute(view, context=context)
-
-
-async def async_process_commands(string: str, *, context=None):
-    view = StringView(string)
-    name = view.get_next_word()
-
-    command = None
-    for cmd in _command_list:
-        if name in cmd.names:
-            command = cmd
-            break
-
-    if command is None:
-        raise CommandNotFound(name)
-
-    await command.async_execute(view, context=context)
+    return command.execute(view, context=context)  # type: ignore
