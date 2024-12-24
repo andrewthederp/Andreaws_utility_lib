@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import inspect
 
-from utilities.misc import maybe_await
-from utilities.commands.view import StringView
+from utilities.commands.converter import async_convert, convert
+from utilities.commands.errors import CommandNotFound, MissingRequiredArgument
 from utilities.commands.parameter import Parameter
-from utilities.commands.converter import convert, async_convert
-from utilities.commands.errors import MissingRequiredArgument, CommandNotFound, ConversionError
+from utilities.commands.view import StringView
+from utilities.misc import maybe_await
 
 
 class Command:
@@ -33,7 +33,7 @@ class Command:
                 parameter = Parameter(
                     name=name,
                     kind=param.kind,
-                    default=None if param.default is inspect.Parameter.empty else param.default,
+                    default=param.default,
                     annotation=str if param.annotation is inspect.Parameter.empty else param.annotation
                 )
                 self.parameters.append(parameter)
@@ -41,7 +41,7 @@ class Command:
         self.parent: Command | None = parent
         self.children: list[Command] = []
 
-        self.execute = self.async_execute if inspect.isasyncgenfunction(self.callback) else self.sync_execute
+        self.execute = self.async_execute if inspect.iscoroutinefunction(self.callback) else self.sync_execute
 
     def __repr__(self):
         return f'<Command name="{self.names[0]}">'

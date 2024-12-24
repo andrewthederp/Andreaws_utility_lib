@@ -1,6 +1,7 @@
-import typing
 from inspect import Parameter
-from typing import Any, get_args, get_origin, Union
+from inspect import Parameter
+from types import UnionType
+from typing import Any, Union
 
 empty = Parameter.empty
 
@@ -10,10 +11,9 @@ class Parameter(Parameter):
         kwargs = {"name": name, "kind": kind, "annotation": annotation}
 
         if default is empty:
-            if origin := get_origin(annotation):
-                if origin is Union:
-                    if type(None) in get_args(annotation):
-                        kwargs["default"] = None
+            if isinstance(annotation, UnionType) or getattr(annotation, "__origin__", None) is Union:
+                if type(None) in annotation.__args__:
+                    kwargs["default"] = None
         else:
             kwargs["default"] = default
 

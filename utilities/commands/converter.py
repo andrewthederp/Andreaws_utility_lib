@@ -1,8 +1,7 @@
 import inspect
-from typing import Annotated, Any, Literal, Union, get_args, get_origin
+from typing import Annotated, Any, Literal, Union
 
 from utilities.commands.errors import ConversionError
-from utilities.commands.parameter import Parameter
 from utilities.commands.view import StringView
 from utilities.misc import maybe_await
 
@@ -26,7 +25,7 @@ class BoolConverter(Converter):
 
 def handle_origin(argument: str, view: StringView, annotation: Any, origin: Any, context):
     if origin is Union:
-        for converter in get_args(annotation):
+        for converter in annotation.__args__:
             if converter is type(None):
                 view.undo()
                 return None
@@ -38,14 +37,14 @@ def handle_origin(argument: str, view: StringView, annotation: Any, origin: Any,
 
         raise ConversionError(f"{argument} could not be converted")
     elif origin is Annotated:
-        annotated_args = get_args(annotation)
+        annotated_args = annotation.__args__
 
-        if origin := get_origin(annotated_args[1]):
+        if origin := getattr(annotated_args[1], "__origin__", None):
             return handle_origin(argument, view, annotated_args[1], origin, context)
         else:
             return convert(argument, view, annotated_args[1], context)
     elif origin is Literal:
-        args = get_args(annotation)
+        args = annotation.__args__
         if argument in args:
             return argument
         else:
@@ -54,7 +53,7 @@ def handle_origin(argument: str, view: StringView, annotation: Any, origin: Any,
 
 async def async_handle_origin(argument: str, view: StringView, annotation: Any, origin: Any, context):
     if origin is Union:
-        for converter in get_args(annotation):
+        for converter in annotation.__args__:
             if converter is type(None):
                 view.undo()
                 return None
@@ -66,14 +65,14 @@ async def async_handle_origin(argument: str, view: StringView, annotation: Any, 
 
         raise ConversionError(f"{argument} could not be converted")
     elif origin is Annotated:
-        annotated_args = get_args(annotation)
+        annotated_args = annotation.__args__
 
-        if origin := get_origin(annotated_args[1]):
+        if origin := getattr(annotated_args[1], "__origin__", None):
             return await async_handle_origin(argument, view, annotated_args[1], origin, context)
         else:
             return await async_convert(argument, view, annotated_args[1], context)
     elif origin is Literal:
-        args = get_args(annotation)
+        args = annotation.__args__
         if argument in args:
             return argument
         else:
@@ -86,7 +85,7 @@ def convert(argument: str, view: StringView, annotation: Any, context=None):
 
     annotation: Converter | callable
 
-    if origin := get_origin(annotation):
+    if origin := getattr(annotation, "__origin__", None):
         return handle_origin(argument, view, annotation, origin, context)
 
     try:
@@ -108,7 +107,7 @@ async def async_convert(argument: str, view: StringView, annotation: Any, contex
 
     annotation: Converter | callable
 
-    if origin := get_origin(annotation):
+    if origin := getattr(annotation, "__origin__", None):
         return await async_handle_origin(argument, view, annotation, origin, context)
 
     try:
