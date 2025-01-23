@@ -1,6 +1,7 @@
 import os
 from typing import Tuple
 from .color_utilities import convert_to_color, rgb_or_rgba_or_hex_typehint
+from .math_utilities import color_lerp
 
 RESET = "\033[0m"
 BOLD = "\033[1m"
@@ -36,11 +37,6 @@ def print_rgb(
         print(string + text + RESET)
 
 
-def lerp(start_color: Tuple[int, int, int], end_color: Tuple[int, int, int], t: float) -> Tuple[int, int, int]:
-    lerped_color = tuple(int(start + (end - start) * t) for start, end in zip(start_color, end_color))
-    return lerped_color
-
-
 def print_gradient(
         text: str,
         start_fg_color: Tuple[int, int, int] = False,
@@ -61,11 +57,11 @@ def print_gradient(
         bg_rgb = False
 
         if start_fg_color:
-            fg_rgb = lerp(start_fg_color, end_fg_color, i / len(text))
+            fg_rgb = color_lerp(start_fg_color, end_fg_color, i / len(text))
         if start_bg_color:
-            bg_rgb = lerp(start_bg_color, end_bg_color, i / len(text))
+            bg_rgb = color_lerp(start_bg_color, end_bg_color, i / len(text))
 
-        string += print_rgb(letter, fg_color=fg_rgb, bg_color=bg_rgb, return_string=True)
+        string += print_rgb(letter, fg_color=fg_rgb, bg_color=bg_rgb, return_string=True).rstrip(RESET)
 
     string += RESET
 

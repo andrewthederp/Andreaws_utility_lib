@@ -3,10 +3,10 @@ import discord
 
 class ToggleButton(discord.ui.Button):
     def __init__(self, *, styles=None, **kwargs):
-        super().__init__(**kwargs, style=styles[False])
-
         if styles is None:
             styles = {True: discord.ButtonStyle.blurple, False: discord.ButtonStyle.gray}
+
+        super().__init__(**kwargs, style=styles[False])
 
         self.state = False
         self.styles = styles

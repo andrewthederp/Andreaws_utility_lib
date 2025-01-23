@@ -24,7 +24,6 @@ def convert_to_color(color: rgb_or_rgba_or_hex_typehint, *, return_hex: bool = F
             alpha = color[3]
         else:
             alpha = 1
-
     else:
         if isinstance(color, str):
             if color in COLORS:
@@ -55,6 +54,8 @@ def convert_to_color(color: rgb_or_rgba_or_hex_typehint, *, return_hex: bool = F
             green = (color >> 8) & 0xFF
             blue = color & 0xFF
             alpha = 1
+        else:
+            raise TypeError(f"Could not convert {color!r} to a color")
 
     if return_hex:
         return hex_from_rgb(red, green, blue, alpha)

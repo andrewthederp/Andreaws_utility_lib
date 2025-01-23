@@ -101,8 +101,8 @@ class Tabulate:
         self.rows.append(row_data)
         return self
 
-    def format(self, table_format=None) -> str:
-        table_format: TableFormat | None = table_format or self.table_format
+    def format(self, table_format=None, *, format_string: typing.Callable[[str, int], str] = str.center) -> str:
+        table_format: TableFormat = table_format or self.table_format
         widths: list[int] = [max(max(len(section) for section in row[i]) for row in self.rows) for i in range(len(self.rows[0]))]
         heights: list[int] = [max(len(section) for section in row) for row in self.rows]
 
@@ -118,7 +118,7 @@ class Tabulate:
                 string += table_format.VERTICAL
 
                 for n, cell in enumerate(row):
-                    string += cell[i].center(widths[n] + 2)
+                    string += format_string(cell[i], widths[n] + 2)
 
                     string += table_format.VERTICAL
 
@@ -135,3 +135,29 @@ class Tabulate:
 
     def __str__(self):
         return self.format()
+
+
+def multi_split(string: str, *split_on: str):
+    lst = []
+    temp = ""
+    temp2 = ""
+    possible_matches = []
+
+    for char in string:
+        if temp2:
+            possible_matches = [i for i in possible_matches if i.startswith(temp2 + char)]
+        else:
+            possible_matches = [i for i in split_on if i.startswith(char)]
+
+        if possible_matches:
+            temp2 += char
+            if temp2 in possible_matches:
+                lst.append(temp)
+                temp = ""
+                temp2 = ""
+                possible_matches = []
+        else:
+            temp += char
+
+    lst.append(temp)
+    return lst

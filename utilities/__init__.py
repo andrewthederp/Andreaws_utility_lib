@@ -15,8 +15,14 @@ try:
 except ImportError:
     pass
 
+try:
+    import pygame
+    from .pygame_utilities import *
+except ImportError:
+    pass
+
 from .cli_utilities import *
 from .color_utilities import *
 from .math_utilities import *
 from .misc import *
-from .cooldowns import Cooldown
+from .cooldowns import *

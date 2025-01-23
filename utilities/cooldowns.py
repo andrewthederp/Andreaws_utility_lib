@@ -1,80 +1,42 @@
-from typing import Any, Hashable
 import time
+from typing import Hashable, Callable
 
 
 class OnCooldown(Exception):
-    """Raised when a bucket is on cooldown"""
-    def __init__(self, retry_after):
-        super().__init__(f"Retry again in {retry_after:.2f}s")
+    """An exception raised when the function is on cooldown"""
+
+    def __init__(self, *, retry_after):
         self.retry_after = retry_after
 
 
-class Bucket:
-    def __init__(self, rate, per):
-        self.rate = rate
-        self.per = per
-
-        self.times = set()
-        self.on_cooldown: bool | float = False
-
-    def _clear_times(self):
-        current = time.monotonic()
-        self.times = {t for t in self.times if current - t < self.per}
-        return self.times
-
-    def add_time(self):
-        self._clear_times()
-        time_to_add = time.monotonic()
-
-        if self.on_cooldown is not False:
-            raise OnCooldown(self.on_cooldown - time_to_add)
-
-        num = sum([time_to_add - t < self.per for t in self.times])
-        if num == self.rate - 1:
-            self.on_cooldown = time_to_add + self.per
-        self.times.add(time_to_add)
-
-
 class Cooldown:
-    def __init__(
-            self,
-            *,
-            rate: int,
-            per: int,
-    ):
-        self._rate = rate
-        self._per = per
-        self._cache = {}
+    def __init__(self, cooldown: int):
+        self.cooldown = cooldown
+        self.cooldowns: dict[Hashable, float] = {}
 
-    def _clean_buckets(self):
-        to_remove = set()
+    def get_cooldown(self, key: Hashable):
+        return self.cooldowns.get(key)
 
-        for k, bucket in self._cache.items():
-            if not bucket._clear_times():
-                to_remove.add(k)
+    def update_cooldown(self, key: Hashable):
+        self.cooldowns[key] = time.monotonic()
 
-        for k in to_remove:
-            del self._cache[k]
+    def on_cooldown(self, key: Hashable):
+        return time.monotonic() - self.cooldowns.get(key, 0) < self.cooldown
 
-    def get_key(self, item: Any) -> Hashable:
-        """A function which takes `item` and returns the key to get the button from, can be subclassed"""
-        return item
+    def get_retry_after(self, key: Hashable):
+        return self.cooldown - (time.monotonic() - self.cooldowns.get(key, 0))
 
-    def get_bucket(self, item: Any) -> Bucket:
-        key = self.get_key(item)
-        bucket = self._cache.get(key)
 
-        if bucket is None:
-            bucket = Bucket(self._rate, self._per)
-            self._cache[key] = bucket
+def cooldown(cooldown: int, key_func: Callable = None):
+    def decorator(func):
+        cd_obj = Cooldown(cooldown)
 
-        return bucket
+        def new_func(*args, **kwargs):
+            key = key_func(*args, **kwargs)
+            if cd_obj.on_cooldown(key):
+                raise OnCooldown(retry_after=cd_obj.get_retry_after(key))
 
-    def update_ratelimit(self, item: Any):
-        self._clean_buckets()
-        bucket = self.get_bucket(item)
-
-        try:
-            bucket.add_time()
-        except OnCooldown as e:
-            return e.retry_after
+            cd_obj.update_cooldown(key)
+            return func(*args, **kwargs)
+        return new_func
+    return decorator

@@ -29,7 +29,8 @@ class LocalImageEmbed(discord.Embed):
         self.files = []
 
     async def send(
-            self, destination: typing.Union[discord.abc.Messageable, discord.Interaction, discord.Webhook],
+            self,
+            destination: typing.Union[discord.abc.Messageable, discord.Interaction, discord.Webhook],
             **kwargs
     ) -> typing.Union[discord.WebhookMessage, discord.Message, None]:
         files = kwargs.pop('files', [])
@@ -53,6 +54,7 @@ class LocalImageEmbed(discord.Embed):
             message_id = kwargs.pop('message_id')
             await editable.edit_message(message_id, embed=self, attachments=self.files, **kwargs)
         else:
+            editable: commands.Context | discord.Message
             await editable.edit(embed=self, attachments=self.files, **kwargs)
 
     def set_image(self, *, url: type_hint):
