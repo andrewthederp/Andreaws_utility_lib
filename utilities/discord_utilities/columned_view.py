@@ -21,7 +21,7 @@ class ColumnedView(discord.ui.View):
         children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
         for _, group in groupby(children, key=key):
-            children = [item.to_component_dict() for item in sorted(group, key=lambda item: getattr(item, 'column', 6))]  # implement better column'ing
+            children = [item.to_component_dict() for item in sorted(group, key=lambda item: getattr(item, 'column', 6))]
             if not children:
                 continue
 

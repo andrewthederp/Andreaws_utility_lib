@@ -141,13 +141,8 @@ def multi_split(string: str, *split_on: str):
     lst = []
     temp = ""
     temp2 = ""
-    possible_matches = []
-
     for char in string:
-        if temp2:
-            possible_matches = [i for i in possible_matches if i.startswith(temp2 + char)]
-        else:
-            possible_matches = [i for i in split_on if i.startswith(char)]
+        possible_matches = [i for i in split_on if i.startswith(temp2 + char)]
 
         if possible_matches:
             temp2 += char
@@ -155,7 +150,6 @@ def multi_split(string: str, *split_on: str):
                 lst.append(temp)
                 temp = ""
                 temp2 = ""
-                possible_matches = []
         else:
             temp += char
 

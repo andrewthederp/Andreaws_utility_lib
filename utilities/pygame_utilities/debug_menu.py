@@ -5,6 +5,13 @@ import pygame
 from typing import Callable
 
 
+__all__ = (
+    "DoNotShow",
+    "DebugLine",
+    "DebugScreen",
+)
+
+
 class DoNotShow:
     def __bool__(self):
         return False
@@ -19,7 +26,7 @@ class DoNotShow:
 value_callable_typehint = Callable[[], str | type[DoNotShow] | DoNotShow]
 
 
-class DebugLine:  # Can't decide whether to stick with this impl or remove the ability to provide key per debug line
+class DebugLine:
     def __init__(
             self,
             key: str,
@@ -30,7 +37,7 @@ class DebugLine:  # Can't decide whether to stick with this impl or remove the a
             key_color: tuple[int, int, int] | None = None,
             value_color: tuple[int, int, int] | None = None
     ):
-        if inspect.isfunction(key):
+        if inspect.isfunction(key):  # Can't decide whether to stick with this impl or remove the ability to provide key per debug line
             self.key = None
             self.value = key
         else:
@@ -55,6 +62,8 @@ class DebugLine:  # Can't decide whether to stick with this impl or remove the a
         screen = pygame.display.get_surface()
 
         value = self.value()
+        if value == DoNotShow or isinstance(value, DoNotShow):
+            return 0
 
         key_surface = font.render(f'{self.key or key}: ', antialias, key_color)
         value_surface = font.render(str(value), antialias, value_color)
@@ -74,7 +83,8 @@ class DebugScreen(dict):
             data: dict[str, value_callable_typehint | DebugLine],
             color: tuple[int, int, int] = (0, 0, 0),
             key_color: tuple[int, int, int] | None = None,
-            value_color: tuple[int, int, int] | None = None
+            value_color: tuple[int, int, int] | None = None,
+            do_draw: bool = False
     ):
         super().__init__(data)
 
@@ -86,7 +96,7 @@ class DebugScreen(dict):
         else:
             self.font = font
 
-        self.do_draw: bool = False
+        self.do_draw: bool = do_draw
 
         self.color = color
         self.key_color = key_color

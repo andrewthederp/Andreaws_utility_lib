@@ -13,7 +13,7 @@ class LerpFactory:
 
         self.lerp_func = lerp_func
 
-        self.t = 0
+        self.t = .0
 
     def step(self, amt=0.01):
         self.t += amt
