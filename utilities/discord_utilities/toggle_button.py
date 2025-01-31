@@ -8,8 +8,17 @@ class ToggleButton(discord.ui.Button):
 
         super().__init__(**kwargs, style=styles[False])
 
-        self.state = False
+        self._state = False
         self.styles = styles
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+        self.style = self.styles[self._state]
 
     async def after_callback(self, interaction: discord.Interaction):
         await interaction.response.edit_message(view=self.view)
@@ -22,5 +31,4 @@ class ToggleButton(discord.ui.Button):
             return
 
         self.state = not self.state
-        self.style = self.styles[self.state]
         await self.after_callback(interaction)
