@@ -1,7 +1,20 @@
 import os
+import sys
 from typing import Tuple
 from .color_utilities import convert_to_color, rgb_or_rgba_or_hex_typehint
 from .math_utilities import color_lerp
+from typing import Callable
+
+try:
+    import readchar
+except ImportError:
+    readchar = None
+
+CURSOR_HIDE = "\033[?25l"
+CURSOR_SHOW = "\033[?25h"
+
+CURSOR_UP = "\033[{}F"
+CURSOR_DOWN = "\033[{}E"
 
 RESET = "\033[0m"
 BOLD = "\033[1m"
@@ -69,6 +82,51 @@ def print_gradient(
         return string
     else:
         print(string)
+
+
+def input_choices(string, *, choices: list[str], on_hover: Callable[[str], str] = (lambda c: c), on_unhover: Callable[[str], str] = (lambda c: c)) -> str:
+    print(CURSOR_HIDE)
+    index = 0
+
+    if string:
+        print(string)
+
+    for i, choice in enumerate(choices):
+        if i == index:
+            print(on_hover(choice))
+        else:
+            print(on_unhover(choice))
+    print(CURSOR_UP.format(len(choices) + 1))
+
+    while True:
+        key = readchar.readkey()
+        if key not in (readchar.key.DOWN, readchar.key.UP, readchar.key.ENTER):
+            continue
+
+        print(on_unhover(choices[index]), end="")
+        if key == readchar.key.DOWN:
+            index += 1
+            if index == len(choices):
+                index = 0
+                print(CURSOR_UP.format(len(choices)))
+            else:
+                print()
+        elif key == readchar.key.UP:
+            index -= 1
+            if index == -1:
+                index = len(choices) - 1
+                print(CURSOR_DOWN.format(index), end="")
+            else:
+                print(CURSOR_UP.format(2))
+        elif key == readchar.key.ENTER:
+            print(CURSOR_DOWN.format(len(choices)-index))
+            print(CURSOR_SHOW, end="")
+            return choices[index]
+
+        print(f"\033[0K{on_hover(choices[index])}\033[A")
+
+if readchar is None:
+    input_choices = NotImplemented
 
 
 def clear_screen():

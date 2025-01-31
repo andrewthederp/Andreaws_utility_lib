@@ -3,8 +3,6 @@ try:
 except ImportError:
     np = None
 
-from PIL import Image, ImageFont
-
 
 class ResizeableTrueTypeFont:
     def __init__(self, font_path):
