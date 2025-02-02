@@ -35,7 +35,8 @@ class DebugLine:
             font: pygame.Font | None = None,
             color: tuple[int, int, int] | None = None,
             key_color: tuple[int, int, int] | None = None,
-            value_color: tuple[int, int, int] | None = None
+            value_color: tuple[int, int, int] | None = None,
+            bg_color: tuple[int, int, int] | None = None
     ):
         if inspect.isfunction(key):  # Can't decide whether to stick with this impl or remove the ability to provide key per debug line
             self.key = None
@@ -49,13 +50,15 @@ class DebugLine:
         self.color = color
         self.key_color = key_color
         self.value_color = value_color
+        self.bg_color = bg_color
 
     def __call__(self):
         return self.value()
 
-    def draw(self, y: int, *, key: str, default_color: tuple[int, int, int], default_font: pygame.Font, antialias: bool = True) -> int:
+    def draw(self, y: int, *, key: str, default_color: tuple[int, int, int], bg_color: tuple[int, int, int] | None, default_font: pygame.Font, antialias: bool = True) -> int:
         key_color = self.key_color or self.color or default_color
         value_color = self.value_color or self.color or default_color
+        bg_color = bg_color or self.bg_color
 
         font = self.font or default_font
 
@@ -65,8 +68,8 @@ class DebugLine:
         if value == DoNotShow or isinstance(value, DoNotShow):
             return 0
 
-        key_surface = font.render(f'{self.key or key}: ', antialias, key_color)
-        value_surface = font.render(str(value), antialias, value_color)
+        key_surface = font.render(f'{self.key or key}: ', antialias, key_color, bgcolor=bg_color)
+        value_surface = font.render(str(value), antialias, value_color, bgcolor=bg_color)
 
         screen.blit(key_surface, (0, y))
         screen.blit(value_surface, (key_surface.width, y))
@@ -78,12 +81,13 @@ class DebugScreen(dict):
     def __init__(
             self,
             *,
+            data: dict[str, value_callable_typehint | DebugLine],
             font: pygame.Font | None = None,
             font_size: int | None = None,
-            data: dict[str, value_callable_typehint | DebugLine],
             color: tuple[int, int, int] = (0, 0, 0),
             key_color: tuple[int, int, int] | None = None,
             value_color: tuple[int, int, int] | None = None,
+            bg_color: tuple[int, int, int] | None = None,
             do_draw: bool = False
     ):
         super().__init__(data)
@@ -101,6 +105,7 @@ class DebugScreen(dict):
         self.color = color
         self.key_color = key_color
         self.value_color = value_color
+        self.bg_color = bg_color
 
     def draw(self, *, antialias: bool = True):
         if self.do_draw is False:
@@ -111,7 +116,7 @@ class DebugScreen(dict):
 
         for key, func in self.items():
             if isinstance(func, DebugLine):
-                y += func.draw(y, key=key, antialias=antialias, default_color=self.color, default_font=self.font)
+                y += func.draw(y, key=key, antialias=antialias, default_color=self.color, default_bg_color=self.bg_color, default_font=self.font)
             else:
                 value = func()
                 if value == DoNotShow or isinstance(value, DoNotShow):
@@ -120,8 +125,8 @@ class DebugScreen(dict):
                 key_color = self.key_color or self.color
                 value_color = self.value_color or self.color
 
-                key_surface = self.font.render(f'{key}: ', antialias, key_color)
-                value_surface = self.font.render(str(value), antialias, value_color)
+                key_surface = self.font.render(f'{key}: ', antialias, key_color, bgcolor=self.bg_color)
+                value_surface = self.font.render(str(value), antialias, value_color, bgcolor=self.bg_color)
 
                 screen.blit(key_surface, (0, y))
                 screen.blit(value_surface, (key_surface.width, y))
