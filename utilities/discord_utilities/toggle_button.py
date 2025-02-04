@@ -27,7 +27,7 @@ class ToggleButton(discord.ui.Button):
         return True
 
     async def callback(self, interaction: discord.Interaction):
-        if not self.interaction_check(interaction):
+        if not await self.interaction_check(interaction):
             return
 
         self.state = not self.state
