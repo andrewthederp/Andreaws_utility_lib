@@ -83,7 +83,7 @@ class DebugScreen(dict):
     def __init__(
             self,
             *,
-            data: dict[str, value_callable_typehint | DebugLine],
+            data: dict[str, value_callable_typehint | DebugLine] = {},
             font: pygame.Font | None = None,
             font_size: int | None = None,
             color: tuple[int, int, int] = (0, 0, 0),

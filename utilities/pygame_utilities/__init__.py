@@ -25,7 +25,7 @@ class ResizeableFont:
             return pygame.font.Font(self.font_path, size)
 
 
-class Scheduler:  # The reason this is a pygame util is that it requires the function to be run every frame
+class Scheduler:  # The reason this is a pygame util is no longer... /shrug
     def __init__(self):
         self._to_run: list[FuncToRunData] = []
 

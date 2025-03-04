@@ -11,6 +11,7 @@ except ImportError:
     pass
 
 try:
+    import PIL
     from .image_utilities import *
 except ImportError:
     pass
@@ -21,8 +22,15 @@ try:
 except ImportError:
     pass
 
-from .cli_utilities import *
+try:
+    import arcade
+    from .arcade_utilities import *
+except ImportError:
+    pass
+
 from .color_utilities import *
 from .math_utilities import *
-from .misc import *
+from .cli_utilities import *
 from .cooldowns import *
+from .random import *
+from .misc import *
