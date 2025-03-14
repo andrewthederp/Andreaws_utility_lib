@@ -1,29 +1,29 @@
 try:
-    import discord
+    import discord  # type: ignore
     from .discord_utilities import *
 except ImportError:
     pass
 
 try:
-    import revolt
+    import revolt  # type: ignore
     from .revolt_utilities import *
 except ImportError:
     pass
 
 try:
-    import PIL
+    import PIL  # type: ignore
     from .image_utilities import *
 except ImportError:
     pass
 
 try:
-    import pygame
+    import pygame  # type: ignore
     from .pygame_utilities import *
 except ImportError:
     pass
 
 try:
-    import arcade
+    import arcade  # type: ignore
     from .arcade_utilities import *
 except ImportError:
     pass
