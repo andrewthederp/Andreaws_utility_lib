@@ -1,7 +1,7 @@
 from PIL import ImageFont, Image
 
 try:
-    import numpy as np
+    import numpy as np  # type: ignore
 except ImportError:
     np = None
 
