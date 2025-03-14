@@ -145,6 +145,9 @@ class DebugScreen(dict):
         self.pop(key)
 
     def __setitem__(self, key, value):
+        replace = key in self
+        y = self[key].key_text.y if replace else self.y 
+
         if isinstance(value, DebugLine):
             value.key_text.batch = self.batch
             value.value_text.batch = self.batch
@@ -152,12 +155,13 @@ class DebugScreen(dict):
             value.key_text.anchor_y = "top"
             value.value_text.anchor_y = "top"
 
-            value.key_text.y = self.y
-            value.value_text.y = self.y
+            value.key_text.y = y
+            value.value_text.y = y
 
             super().__setitem__(key, value)
 
-            self.y -= max(value.key_text.content_height, value.value_text.content_height)
+            if not replace:
+                self.y -= max(value.key_text.content_height, value.value_text.content_height)
             return
 
         key_color = self.key_color or self.color
@@ -166,7 +170,7 @@ class DebugScreen(dict):
         key_text = arcade.Text(
                 f"{key}: ",
                 0,
-                self.y,
+                y,
                 key_color,
                 self.font_size,
                 font_name=self.font_name,
@@ -177,7 +181,7 @@ class DebugScreen(dict):
         value_text = arcade.Text(
                 repr(value()),
                 key_text.content_width,
-                self.y,
+                y,
                 value_color,
                 self.font_size,
                 font_name=self.font_name,
@@ -185,7 +189,8 @@ class DebugScreen(dict):
                 batch=self.batch
             )
 
-        self.y -= max(key_text.content_height, value_text.content_height)
+        if not replace:
+            self.y -= max(key_text.content_height, value_text.content_height)
 
         super().__setitem__(
             key,
