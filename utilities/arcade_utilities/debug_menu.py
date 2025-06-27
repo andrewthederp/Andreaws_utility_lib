@@ -113,6 +113,19 @@ class DebugLine:
     def update(self):
         self.value_text.text = repr(self.func())
 
+    @property
+    def height(self):
+        return max(self.key_text.content_height, self.value_text.content_height)
+
+    @property
+    def y(self):
+        return self.key_text.y
+
+    @y.setter
+    def y(self, new_y):
+        self.key_text.y = new_y
+        self.value_text.y = new_y
+
 
 class DebugScreen(dict):
     def __init__(
@@ -207,8 +220,8 @@ class DebugScreen(dict):
         except KeyError:
             return False
 
-        debug_line.key_text.batch = None
-        debug_line.value_text.batch = None
+        debug_line.key_text.batch = None  # type: ignore
+        debug_line.value_text.batch = None  # type: ignore
 
         y = debug_line.key_text.top
         h = max(debug_line.key_text.content_height, debug_line.value_text.content_height)
@@ -218,6 +231,15 @@ class DebugScreen(dict):
             debug_line.value_text.y += h
 
         return True
+
+    def adjust_positions(self):
+        y = arcade.get_window().height
+
+        for debug_line in self.values():
+            debug_line.y = y
+            y -= debug_line.height
+
+        self.y = y
 
     def draw(self):
         if self.do_draw is False:

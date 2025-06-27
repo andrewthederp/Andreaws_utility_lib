@@ -3,3 +3,6 @@ __pycache__
 .venv
 *.egg-info
 main.py
+goto.py
+test.glsl
+.gitignore

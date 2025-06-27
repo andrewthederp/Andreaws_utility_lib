@@ -5,6 +5,7 @@ import typing
 from inspect import isawaitable
 from typing import Optional, Iterable
 
+
 # def run_in_executor():
 #     def decorator(func):
 #         @functools.wraps(func)
@@ -74,7 +75,7 @@ def get_global_variable(name):
 
 
 class Tabulate:
-    def __init__(self, *, columns: list[str], table_format=TableFormat):
+    def __init__(self, *, columns: list[str], table_format: type[TableFormat] = TableFormat):
         self.rows = [self._do_row_magic(columns)]
         self.table_format = table_format
 
@@ -101,8 +102,8 @@ class Tabulate:
         self.rows.append(row_data)
         return self
 
-    def format(self, table_format=None, *, format_string: typing.Callable[[str, int], str] = str.center) -> str:
-        table_format: TableFormat = table_format or self.table_format
+    def format(self, table_format: type[TableFormat] | None = None, *, format_string: typing.Callable[[str, int], str] = str.center) -> str:
+        table_format: type[TableFormat] = table_format or self.table_format
         widths: list[int] = [max(max(len(section) for section in row[i]) for row in self.rows) for i in range(len(self.rows[0]))]
         heights: list[int] = [max(len(section) for section in row) for row in self.rows]
 
