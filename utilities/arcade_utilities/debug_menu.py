@@ -247,4 +247,14 @@ class DebugScreen(dict):
 
         for value in self.values():
             value.update()
+
+            if self.bg_color:
+                arcade.draw_lrbt_rectangle_filled(
+                    value.key_text.left,
+                    value.value_text.right,
+                    value.key_text.top,
+                    value.value_text.bottom,
+                    self.bg_color
+                )
+
         self.batch.draw()
