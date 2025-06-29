@@ -6,7 +6,7 @@ desc = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="andreaw_utilities",
-    version="0.0.83",
+    version="0.0.84",
     description="A library containing various utilities that I use in my projects.",
     long_description=desc,
     long_description_content_type="text/markdown",

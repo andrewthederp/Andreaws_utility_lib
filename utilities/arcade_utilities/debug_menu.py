@@ -252,8 +252,8 @@ class DebugScreen(dict):
                 arcade.draw_lrbt_rectangle_filled(
                     value.key_text.left,
                     value.value_text.right,
-                    value.key_text.top,
-                    value.value_text.bottom,
+                    value.key_text.bottom,
+                    value.value_text.top,
                     self.bg_color
                 )
 
