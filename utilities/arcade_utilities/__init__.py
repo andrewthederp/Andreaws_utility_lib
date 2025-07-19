@@ -1,6 +1,8 @@
 import arcade
 from .debug_menu import *
+from .commands import CommandView, CommandContext
 from typing import TypedDict, Callable, Any
+
 
 class FuncToRunData(TypedDict):
     func: Callable[..., None]
@@ -17,7 +19,7 @@ class Scheduler:
         self._to_run.append({
             "func": func,
             "seconds": seconds,
-            "args": args,
+            "args": args,  # type: ignore
             "kwargs": kwargs
         })
 

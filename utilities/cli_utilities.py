@@ -1,12 +1,12 @@
 import os
 import sys
 from typing import Tuple
-from .color_utilities import convert_to_color, rgb_or_rgba_or_hex_typehint
+from .color_utilities import Color
 from .math_utilities import color_lerp
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
 try:
-    import readchar
+    import readchar  # type: ignore
 except ImportError:
     readchar = None
 
@@ -31,17 +31,17 @@ OVERLINE = "\033[53m"
 
 def print_rgb(
         text: str,
-        fg_color: rgb_or_rgba_or_hex_typehint = False,
-        bg_color: rgb_or_rgba_or_hex_typehint = False,
+        fg_color: Color | None = None,
+        bg_color: Color | None = None,
         return_string: bool = False,
 ) -> str | None:
     string = ''
 
     if fg_color:
-        r, g, b, a = convert_to_color(fg_color)
+        r, g, b, a = fg_color.rgba
         string = f'\033[38;2;{int(r * a)};{int(g * a)};{int(b * a)}m'
     if bg_color:
-        r, g, b, a = convert_to_color(bg_color)
+        r, g, b, a = bg_color.rgba
         string += f'\033[48;2;{int(r * a)};{int(g * a)};{int(b * a)}m'
 
     if return_string:
@@ -52,10 +52,10 @@ def print_rgb(
 
 def print_gradient(
         text: str,
-        start_fg_color: Tuple[int, int, int] = False,
-        end_fg_color: Tuple[int, int, int] = False,
-        start_bg_color: Tuple[int, int, int] = False,
-        end_bg_color: Tuple[int, int, int] = False,
+        start_fg_color: Color | None = None,
+        end_fg_color: Color | None = None,
+        start_bg_color: Color | None = None,
+        end_bg_color: Color | None = None,
         return_string: bool = False
 ) -> str | None:
     if any([start_fg_color, end_fg_color]) and not all([start_fg_color, end_fg_color]):
@@ -69,12 +69,12 @@ def print_gradient(
         fg_rgb = False
         bg_rgb = False
 
-        if start_fg_color:
-            fg_rgb = color_lerp(start_fg_color, end_fg_color, i / len(text))
-        if start_bg_color:
-            bg_rgb = color_lerp(start_bg_color, end_bg_color, i / len(text))
+        if start_fg_color and end_fg_color:
+            fg_rgb = color_lerp(start_fg_color.rgb, end_fg_color.rgb, i / len(text))
+        if start_bg_color and end_bg_color:
+            bg_rgb = color_lerp(start_bg_color.rgb, end_bg_color.rgb, i / len(text))
 
-        string += print_rgb(letter, fg_color=fg_rgb, bg_color=bg_rgb, return_string=True).rstrip(RESET)
+        string += print_rgb(letter, fg_color=Color(*fg_rgb) if fg_rgb else None, bg_color=Color(*bg_rgb) if bg_rgb else None, return_string=True).rstrip(RESET)  # type: ignore
 
     string += RESET
 
@@ -85,6 +85,9 @@ def print_gradient(
 
 
 def input_choices(string, *, choices: list[str], on_hover: Callable[[str], str] = (lambda c: c), on_unhover: Callable[[str], str] = (lambda c: c)) -> str:
+    if TYPE_CHECKING:
+        assert readchar
+
     print(CURSOR_HIDE)
     index = 0
 
@@ -126,7 +129,7 @@ def input_choices(string, *, choices: list[str], on_hover: Callable[[str], str] 
         print(f"\033[0K{on_hover(choices[index])}\033[A")
 
 if readchar is None:
-    input_choices = NotImplemented
+    input_choices = NotImplemented  # type: ignore
 
 
 def clear_screen():

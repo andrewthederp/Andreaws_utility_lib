@@ -5,6 +5,7 @@ import arcade
 from typing import Callable, TypedDict, Any
 import arcade.clock
 from pyglet.graphics import Batch
+import arcade.shape_list
 
 
 __all__ = (
@@ -13,6 +14,8 @@ __all__ = (
     "DebugScreen",
 )
 
+
+# TODO: Make more effiecient background color
 
 # class DoNotShow:
 #     def __bool__(self):

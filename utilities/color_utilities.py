@@ -1,67 +1,51 @@
-import json
-import os
-import re
-from typing import Tuple, Union
+class Color:
+    def __init__(self, r: int, g: int, b: int, *, a: int = 255):
+        self.r = r
+        self.g = g
+        self.b = b
+        self.a = a
 
-hex_typehint = Union[str, int]
-rgb_or_rgba_typehint = Union[Tuple[int, int, int], Tuple[int, int, int, float]]
-rgb_or_rgba_or_hex_typehint = Union[hex_typehint, rgb_or_rgba_typehint]
+    def __str__(self):
+        return f"0x{self.r:02x}{self.g:02x}{self.b:02x}"
 
-RGB_PATTERN = re.compile(r"\(?(\d+),\s?(\d+),\s?(\d+)(,\s?(\d+))?\)?")
+    def __int__(self):
+        return (self.r << 16) | (self.g << 8) | self.b
 
-absolute_path = os.path.join(os.path.dirname(__file__), 'data', 'colors.json')
+    def __getitem__(self, indice):
+        return self.rgba[indice]
 
-with open(absolute_path, "r") as f:
-    COLORS = json.load(f)
+    @property
+    def decimal(self):
+        return int(self)
 
+    @property
+    def rgba(self):
+        return (self.r, self.g, self.b, self.a)
 
-def convert_to_color(color: rgb_or_rgba_or_hex_typehint, *, return_hex: bool = False):
-    if isinstance(color, (tuple, list)):
-        red = color[0]
-        green = color[1]
-        blue = color[2]
-        if len(color) == 4:
-            alpha = color[3]
-        else:
-            alpha = 1
-    else:
-        if isinstance(color, str):
-            if color in COLORS:
-                red, green, blue = COLORS[color]
-                if return_hex:
-                    return hex_from_rgb(red, green, blue)
-                return red, green, blue
-            elif match := RGB_PATTERN.search(color):
-                colors = tuple(int(val) for val in match.groups() if val)
-                red = colors[0]
-                green = colors[1]
-                blue = colors[2]
-                if len(colors) == 4:
-                    alpha = colors[3]
-                else:
-                    alpha = 1
+    @property
+    def rgb(self):
+        return (self.r, self.g, self.b)
 
-                if return_hex:
-                    return hex_from_rgb(red, green, blue)
-            else:
-                if return_hex:
-                    return color  # why would you pass a hex and ask for a hex back
-                color = color.lower().replace("0x", '').replace("#", '')
-                color = int(color, base=16)
+    @property
+    def hex(self):
+        return str(self)
 
-        if isinstance(color, int):
-            red = (color >> 16) & 0xFF
-            green = (color >> 8) & 0xFF
-            blue = color & 0xFF
-            alpha = 1
-        else:
-            raise TypeError(f"Could not convert {color!r} to a color")
+    @property
+    def uniform(self):
+        return (self.r / 255, self.g / 255, self.b / 255, self.a / 255)
 
-    if return_hex:
-        return hex_from_rgb(red, green, blue, alpha)
+    @classmethod
+    def from_hex(cls, hex_value: int):
+        return cls.from_int(hex_value)
 
-    return red, green, blue, alpha
+    @classmethod
+    def from_rgb(cls, r, g, b):
+        return cls(r, g, b)
 
+    @classmethod
+    def from_rgba(cls, r, g, b, *, a=255):
+        return cls(r, g, b, a=a)
 
-def hex_from_rgb(red: int, green: int, blue: int, alpha: float = 1) -> str:
-    return f"#{red:02x}{green:02x}{blue:02x}"
+    @classmethod
+    def from_int(cls, decimal: int):
+        return cls((decimal >> 16) & 0xFF, (decimal >> 8) & 0xFF, decimal & 0xFF)

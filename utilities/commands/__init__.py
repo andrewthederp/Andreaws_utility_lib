@@ -3,3 +3,9 @@ from .converter import Converter, FlagConverter, convert, async_convert
 from .parameter import Parameter
 from .view import StringView
 from .errors import *
+
+try:
+    import prompt_toolkit  # type: ignore
+    from .prompt_toolkit_compat.complete import *
+except ImportError:
+    pass

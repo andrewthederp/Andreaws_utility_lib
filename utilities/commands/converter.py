@@ -1,7 +1,7 @@
 import inspect
 import re
 from types import UnionType
-from typing import Annotated, Any, Literal, Union
+from typing import Annotated, Any, Literal, Union, Callable, Sequence
 
 from utilities.commands.errors import ConversionError
 from utilities.commands.view import StringView
@@ -9,6 +9,8 @@ from utilities.misc import maybe_await
 
 
 class Converter:
+    get_completions = NotImplemented
+
     def convert(self, argument: str, view: StringView, context: Any):
         raise NotImplementedError
 
@@ -63,7 +65,7 @@ class FlagConverter(Converter, metaclass=FlagConverterMetaClass):
     def convert(self, argument: str, view: StringView, ctx: Any):
         arguments = {}
 
-        matches = list(self._regex_pattern.finditer(argument))
+        matches = list(self._regex_pattern.finditer(argument))  # type: ignore
         for num, i in enumerate(matches, start=1):
             flag_name = i.group('flag')
             argument_start = i.span()[1]
@@ -75,7 +77,7 @@ class FlagConverter(Converter, metaclass=FlagConverterMetaClass):
                 argument_end = next_match.span()[0]
                 string = argument[argument_start:argument_end - 1]
 
-            parameter = self._flag_parameters[flag_name]
+            parameter = self._flag_parameters[flag_name]  # type: ignore
             v = StringView(string)
 
             origin = getattr(parameter.annotation, "__origin__", None)
@@ -94,8 +96,8 @@ class FlagConverter(Converter, metaclass=FlagConverterMetaClass):
             else:
                 arguments[flag_name] = convert(string, v, parameter.annotation, ctx)
 
-        for flag_name in self._flag_names:
-            parameter = self._flag_parameters[flag_name]
+        for flag_name in self._flag_names:  # type: ignore
+            parameter = self._flag_parameters[flag_name]  # type: ignore
             if flag_name not in arguments:
                 if parameter.default == inspect.Parameter.empty:
                     raise Exception(f'missing required flag "{flag_name}"')
@@ -161,18 +163,19 @@ async def async_handle_origin(argument: str, view: StringView, annotation: Any, 
             raise ConversionError(f"{argument} could not be converted into any literal.")
 
 
-def convert(argument: str, view: StringView, annotation: Any, context=None):
+def convert(argument: str, view: StringView, annotation: Any, context=None):  # type: ignore
     if annotation is bool:
         annotation = BoolConverter
 
-    annotation: Converter | callable
+    annotation: Converter | Callable
 
-    if origin := getattr(annotation, "__origin__", None):
+    origin = getattr(annotation, "__origin__", None) or (isinstance(annotation, UnionType) and annotation)
+    if origin:
         return handle_origin(argument, view, annotation, origin, context)
 
     try:
         if annotation in [str, int, float]:
-            return annotation(argument)
+            return annotation(argument)  # type: ignore
         elif isinstance(annotation, Converter):
             return annotation.convert(argument, view, context)
         elif inspect.isclass(annotation) and issubclass(annotation, Converter):
@@ -183,18 +186,18 @@ def convert(argument: str, view: StringView, annotation: Any, context=None):
         raise ConversionError(e)
 
 
-async def async_convert(argument: str, view: StringView, annotation: Any, context=None):
+async def async_convert(argument: str, view: StringView, annotation: Any, context=None):  # type: ignore
     if annotation is bool:
         annotation = BoolConverter
 
-    annotation: Converter | callable
+    annotation: Converter | Callable
 
     if origin := getattr(annotation, "__origin__", None):
         return await async_handle_origin(argument, view, annotation, origin, context)
 
     try:
         if annotation in [str, int, float]:
-            return annotation(argument)
+            return annotation(argument)  # type: ignore
         elif isinstance(annotation, Converter):
             return await maybe_await(annotation.convert, argument, view, context)
         elif inspect.isclass(annotation) and issubclass(annotation, Converter):

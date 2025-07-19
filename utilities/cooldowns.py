@@ -14,7 +14,7 @@ class Cooldown:
         self.cooldown = cooldown
         self.cooldowns: dict[Hashable, float] = {}
 
-    def get_cooldown(self, key: Hashable) -> float:
+    def get_cooldown(self, key: Hashable) -> float | None:
         return self.cooldowns.get(key)
 
     def update_cooldown(self, key: Hashable) -> None:
@@ -34,7 +34,7 @@ class Cooldown:
         return self.cooldown - (time.monotonic() - self.cooldowns.get(key, 0))
 
 
-def cooldown(cooldown: int, key_func: Callable = None):
+def cooldown(cooldown: int, key_func: Callable):
     def decorator(func):
         cd_obj = Cooldown(cooldown)
 

@@ -7,28 +7,31 @@ from utilities.commands.errors import CommandNotFound, MissingRequiredArgument
 from utilities.commands.parameter import Parameter
 from utilities.commands.view import StringView
 from utilities.misc import maybe_await
+from typing import Callable
 
 
 class Command:
     def __init__(
             self,
-            callback: callable,
+            callback: Callable,
             *,
-            name: str = None,
+            name: str | None = None,
             description: str = '',
             usage: str = '',
-            aliases: list[str] = None,
-            parent: Command | None = None
+            aliases: list[str] | None = None,
+            parent: Command | None = None,
+            pass_context: bool = False
     ):
         self.names: list[str] = [name or callback.__name__] + (aliases or [])
         self.usage: str = usage
         self.description: str = description
-        self.callback: callable = callback
+        self.callback: Callable = callback
         self.parameters: list[Parameter] = []
+        self.pass_context = pass_context
 
         for name, param in inspect.signature(self.callback).parameters.items():
             if isinstance(param.default, Parameter):
-                self.parameters.append(Parameter)
+                self.parameters.append(param.default)
             else:
                 parameter = Parameter(
                     name=name,
@@ -165,7 +168,9 @@ def remove_command(command: Command | str) -> Command:
         for cmd in _command_list[::-1]:
             if command in cmd.names:
                 _command_list.remove(cmd)
-    return command
+                command = cmd
+
+    return command  # type: ignore
 
 
 def command(*args, **kwargs):
