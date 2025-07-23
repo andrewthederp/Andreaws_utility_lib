@@ -10,6 +10,13 @@ from utilities.misc import maybe_await
 from typing import Callable
 
 
+def evaluate_annotation(annotation, globals):
+    if isinstance(annotation, str):
+        return eval(annotation, globals)
+
+    return annotation
+
+
 class Command:
     def __init__(
             self,
@@ -37,8 +44,9 @@ class Command:
                     name=name,
                     kind=param.kind,
                     default=param.default,
-                    annotation=str if param.annotation is inspect.Parameter.empty else param.annotation
+                    annotation=str if param.annotation is inspect.Parameter.empty else evaluate_annotation(param.annotation, callback.__globals__)
                 )
+                print(repr(parameter.annotation))
                 self.parameters.append(parameter)
 
         self.parent: Command | None = parent

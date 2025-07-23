@@ -30,13 +30,15 @@ class BoolConverter(Converter):
 
 class _ColorConverter(Converter):
     def convert(self, argument: str, _: StringView, __: Any):
+        print(argument)
         try:
             color = Color.from_str(argument)
+            return color
         except Exception:
             raise ConversionError(f"{argument} could not be converted into a color")
-        return color
 
 ColorConverter = Annotated[Color, _ColorConverter]
+
 
 class FlagConverterMetaClass(type):
     def __new__(cls, name, bases, attrs, *, prefix="--", delimiter=" "):
@@ -180,9 +182,12 @@ def convert(argument: str, view: StringView, annotation: Any, context=None):  # 
 
     annotation: Converter | Callable
 
-    origin = getattr(annotation, "__origin__", None) or (isinstance(annotation, UnionType) and annotation)
-    if origin:
-        return handle_origin(argument, view, annotation, origin, context)
+    if hasattr(annotation, "__metadata__"):
+        annotation = annotation.__metadata__[0]  # type: ignore
+    else:
+        origin = getattr(annotation, "__origin__", None) or (isinstance(annotation, UnionType) and annotation)
+        if origin:
+            return handle_origin(argument, view, annotation, origin, context)
 
     try:
         if annotation in [str, int, float]:
@@ -203,8 +208,12 @@ async def async_convert(argument: str, view: StringView, annotation: Any, contex
 
     annotation: Converter | Callable
 
-    if origin := getattr(annotation, "__origin__", None):
-        return await async_handle_origin(argument, view, annotation, origin, context)
+    if hasattr(annotation, "__metadata__"):
+        annotation = annotation.__metadata__[0]  # type: ignore
+    else:
+        origin = getattr(annotation, "__origin__", None) or (isinstance(annotation, UnionType) and annotation)
+        if origin:
+            return await async_handle_origin(argument, view, annotation, origin, context)
 
     try:
         if annotation in [str, int, float]:
