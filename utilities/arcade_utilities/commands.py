@@ -592,6 +592,10 @@ class CommandView(arcade.gui.UIView):
                     self.clear()
                 else:
                     self.window.show_view(self.background_view)
+                    try:
+                        self.window.exit_command_view(self.background_view)  # type: ignore  # In case you overrid Window.show_view
+                    except AttributeError:
+                        pass
         # elif self.auto_complete is None and symbol in (arcade.key.UP, arcade.key.DOWN):
         #     if symbol == arcade.key.UP:
         #         self.history_index = max(-1, self.history_index - 1)
