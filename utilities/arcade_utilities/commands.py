@@ -472,8 +472,7 @@ class CommandView(arcade.gui.UIView):
         """Append text to the text area."""
         start = len(self.text_area.text)
 
-        for key, value in self.default_attributes.items():
-            kwargs.setdefault(key, value)
+        kwargs = {**self.default_attributes, **kwargs}
 
         self.text_area.doc.insert_text(
             start,  # type: ignore

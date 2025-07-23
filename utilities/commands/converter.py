@@ -1,10 +1,11 @@
 import inspect
 import re
 from types import UnionType
-from typing import Annotated, Any, Literal, Union, Callable, Sequence
+from typing import Annotated, Any, Literal, Union, Callable
 
 from utilities.commands.errors import ConversionError
 from utilities.commands.view import StringView
+from utilities.color_utilities import Color
 from utilities.misc import maybe_await
 
 
@@ -26,6 +27,16 @@ class BoolConverter(Converter):
         else:
             raise ConversionError(f"{argument} could not be converted into a bool")
 
+
+class _ColorConverter(Converter):
+    def convert(self, argument: str, _: StringView, __: Any):
+        try:
+            color = Color.from_str(argument)
+        except Exception:
+            raise ConversionError(f"{argument} could not be converted into a color")
+        return color
+
+ColorConverter = Annotated[Color, _ColorConverter]
 
 class FlagConverterMetaClass(type):
     def __new__(cls, name, bases, attrs, *, prefix="--", delimiter=" "):

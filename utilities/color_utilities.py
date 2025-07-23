@@ -1,3 +1,5 @@
+import re
+
 class Color:
     def __init__(self, r: int, g: int, b: int, *, a: int = 255):
         self.r = r
@@ -13,6 +15,18 @@ class Color:
 
     def __getitem__(self, indice):
         return self.rgba[indice]
+
+    def get_luminance(self):
+        return 0.299 * self.r + 0.587 * self.g + 0.114 * self.b
+
+    def get_saturation(self):
+        r, g, b = self.rgb
+        max_c = max(r, g, b)
+        min_c = min(r, g, b)
+        if r == g == b:
+            return 0
+
+        return (max_c - min_c) / max_c
 
     @property
     def decimal(self):
@@ -49,3 +63,27 @@ class Color:
     @classmethod
     def from_int(cls, decimal: int):
         return cls((decimal >> 16) & 0xFF, (decimal >> 8) & 0xFF, decimal & 0xFF)
+
+    @classmethod
+    def from_str(cls, value: str):
+        if value.startswith("#"):
+            value = value[1:]
+        elif value.startswith("0x"):
+            value = value[2:]
+
+        try:
+            return cls.from_int(int(value, base=16))
+        except ValueError:
+            pass
+
+        match = re.match(r"(rgb)?\((?P<red>\d{1,3}),( )?(?P<green>\d{1,3}),( )?(?P<blue>\d{1,3})(,( )?(?P<alpha>\d{1,3}))?\)", value)  # rgb match
+        if match:
+            r = int(match["red"])
+            g = int(match["green"])
+            b = int(match["blue"])
+            a = int(match["alpha"] or 255)
+            if any(x not in range(256) for x in (r, g, b, a)):
+                raise
+
+            return cls(r, g, b, a=a)
+        raise
