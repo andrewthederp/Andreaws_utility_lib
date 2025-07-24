@@ -46,7 +46,6 @@ class Command:
                     default=param.default,
                     annotation=str if param.annotation is inspect.Parameter.empty else evaluate_annotation(param.annotation, callback.__globals__)
                 )
-                print(repr(parameter.annotation))
                 self.parameters.append(parameter)
 
         self.parent: Command | None = parent

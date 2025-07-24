@@ -30,7 +30,6 @@ class BoolConverter(Converter):
 
 class _ColorConverter(Converter):
     def convert(self, argument: str, _: StringView, __: Any):
-        print(argument)
         try:
             color = Color.from_str(argument)
             return color
