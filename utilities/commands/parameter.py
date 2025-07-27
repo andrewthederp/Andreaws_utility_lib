@@ -82,6 +82,9 @@ class Parameter(InParam):
                     annotation = annotation.__args__[0]
                     if origin := getattr(annotation, "__origin__", None):
                         return self.get_origin_completions(annotation, origin, value)
+                    if hasattr(annotation, "__metadata__"):
+                        annotation = annotation.__metadata__[0]  # type: ignore
+                        return self.get_annotation_completions(annotation, value)
                     else:
                         return self.get_annotation_completions(annotation, value)
                 elif origin is None:
