@@ -6,7 +6,7 @@ import arcade.gui
 from arcade.types import Color
 from pyglet.event import EVENT_HANDLED, EVENT_UNHANDLED
 
-from typing import Sequence, Any
+from typing import Sequence, Any, TypeVar
 from utilities.commands import StringView, Command, Converter, FlagConverter, command, get_command_list, process_commands
 
 from contextlib import suppress
@@ -15,6 +15,9 @@ try:
     import pyperclip
 except ImportError:
     pyperclip = None
+
+
+V = TypeVar("V", bound=arcade.View | arcade.Window)
 
 
 class CommandContext:
@@ -447,13 +450,17 @@ class CommandView(arcade.gui.UIView):
                 try:
                     process_commands(
                         text[1:],
-                        context=CommandContext(
-                            self.window,
-                            command_view=self
-                        ),
+                        context=self.get_context(),
                     )
                 except Exception as e:
                     self.on_error(e)
+
+    def get_context(self) -> CommandContext:
+        context = CommandContext(
+            self.window,
+            command_view=self
+        )
+        return context
 
     def on_error(self, error: Exception):
         pass
