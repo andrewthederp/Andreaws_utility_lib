@@ -6,3 +6,4 @@ main.py
 goto.py
 test.glsl
 .gitignore
+*.ttf

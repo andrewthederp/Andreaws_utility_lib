@@ -42,17 +42,14 @@ class Parameter(InParam):
             lst: list[str] = []
             for annotation in annotation.__args__:
                 if origin := getattr(annotation, "__origin__", None):
-                    lst.extend(self.get_origin_completions(annotation, origin, value))
+                    if hasattr(annotation, "__metadata__"):
+                        annotation = annotation.__metadata__[0]  # type: ignore
+                        lst.extend(self.get_annotation_completions(annotation, value))
+                    else:
+                        lst.extend(self.get_origin_completions(annotation, origin, value))
                 else:
                     lst.extend(self.get_annotation_completions(annotation, value))
             return lst
-        elif origin is Annotated:
-            _, annotation = origin.__args__
-
-            if origin := getattr(annotation, "__origin__", None):
-                return self.get_origin_completions(annotation, origin, value)
-            else:
-                return self.get_annotation_completions(annotation, value)
         else:
             raise Exception("Unsupported origin")
 
@@ -77,18 +74,19 @@ class Parameter(InParam):
                     return []
 
                 annotation = parameter.annotation
-                origin = getattr(annotation, "__origin__", None)
-                if origin in (list, tuple):
+                origin = None
+
+                if hasattr(annotation, "__metadata__"):
+                    annotation = annotation.__metadata__[0]  # type: ignore
+                else:
+                    origin = getattr(annotation, "__origin__", None)
+
+                if origin is None:
+                    return self.get_annotation_completions(annotation, value)
+                elif origin in (list, tuple):
                     annotation = annotation.__args__[0]
                     if origin := getattr(annotation, "__origin__", None):
                         return self.get_origin_completions(annotation, origin, value)
-                    if hasattr(annotation, "__metadata__"):
-                        annotation = annotation.__metadata__[0]  # type: ignore
-                        return self.get_annotation_completions(annotation, value)
-                    else:
-                        return self.get_annotation_completions(annotation, value)
-                elif origin is None:
-                    return self.get_annotation_completions(annotation, value)
                 else:
                     return self.get_origin_completions(annotation, origin, value)
             else:

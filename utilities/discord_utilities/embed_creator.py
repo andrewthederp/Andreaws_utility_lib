@@ -7,7 +7,6 @@ from discord.ext import commands
 from .confirmation import Confirm
 from .modal_creator import MakeModal
 from .utils import get_image_url
-from ..color_utilities import convert_to_color
 
 
 class EmbedCreator(discord.ui.View):
@@ -108,7 +107,8 @@ class EmbedCreator(discord.ui.View):
 
             await self.edit_message(inter)
 
-        hex_color = convert_to_color(self.embed.colour.value, return_hex=True) if self.embed.color else ''
+        # hex_color = convert_to_color(self.embed.colour, return_hex=True) if self.embed.color else ''
+        hex_color = str(self.embed.color) if self.embed.color else ''
 
         modal = MakeModal(
             title="Embed Color",

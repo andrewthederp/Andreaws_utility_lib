@@ -66,7 +66,7 @@ class FlagConverterMetaClass(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class FlagConverter(Converter, metaclass=FlagConverterMetaClass):
+class FlagConverter(Converter, metaclass=FlagConverterMetaClass):  # TODO: reconvert annotations from str when using __future__
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)

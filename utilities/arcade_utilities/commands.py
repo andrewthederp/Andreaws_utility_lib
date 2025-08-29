@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from arcade.gui import *  # type: ignore
 import pyglet
 import arcade
@@ -6,10 +8,11 @@ import arcade.gui
 from arcade.types import Color
 from pyglet.event import EVENT_HANDLED, EVENT_UNHANDLED
 
-from typing import Sequence, Any, TypeVar
+from typing import Sequence, Any, TypeVar, Callable
 from utilities.commands import StringView, Command, Converter, FlagConverter, command, get_command_list, process_commands
 
 from contextlib import suppress
+
 
 try:
     import pyperclip
@@ -17,7 +20,53 @@ except ImportError:
     pyperclip = None
 
 
-V = TypeVar("V", bound=arcade.View | arcade.Window)
+class TextStyle:
+    def __init__(self, string: str | Any, **kwargs) -> None:
+        self.string = string if isinstance(string, str) else repr(string)
+        self.kwargs = kwargs
+
+    def __repr__(self) -> str:
+        return f"<TextStyle string={self.string!r} formats={self.kwargs}>"
+
+    def __bool__(self):
+        return bool(self.string)
+
+    def __len__(self):
+        return len(self.string)
+
+
+class Text:
+    inc: int = 0
+    on_press: Callable  # give the text object an `on_press` to make it do something when pressed
+
+    def __init__(self, view: "CommandView", start: int, end: int):
+        self.id = Text.inc
+        self.start = start
+        self.end = end
+
+        self.view = view
+
+        Text.inc += 1
+
+    def __repr__(self) -> str:
+        return f"<Text id={self.id} start={self.start} end={self.end}>"
+
+    def edit(self, *texts: str | TextStyle, **kwargs):
+        self.view.edit_text(self, *texts, **kwargs)
+
+    def set_style(self, *styles):
+        if len(styles) == 0:
+            self.view.set_style(self.start, self.end, {})
+        elif len(styles) == 1:
+            self.view.set_style(self.start, self.end, styles[0])
+        elif len(styles) == (self.end - self.start):
+            for i, style in enumerate(styles, start=self.start):
+                self.view.set_style(i, i + 1, style)
+        else:
+            raise
+
+    def delete(self):
+        self.view.delete_text(self)
 
 
 class CommandContext:
@@ -25,8 +74,16 @@ class CommandContext:
         self.window = window
         self.command_view = command_view
 
-    def send(self, text: Any, *, end: str = "\u2028", **kwargs):
-        self.command_view.send_text((text if isinstance(text, str) else repr(text)) + end, **kwargs)
+    def send(self, *texts: Any | TextStyle, end: str = "\u2028", **kwargs) -> Text:
+        text_obj = self.command_view.send_text(
+            *(
+                text if isinstance(text, (str, TextStyle)) else repr(text) for text in texts
+            ),
+            **kwargs
+        )
+
+        self.command_view.send_text(end)
+        return text_obj
 
 
 class AutoComplete(arcade.gui.UILayout):
@@ -34,7 +91,10 @@ class AutoComplete(arcade.gui.UILayout):
     complete_amount = 5
     complete_spacing = 5
 
-    def __init__(self, x, y, *, completions: list[str], index: int) -> None:
+    def __init__(self, x, y, *, completions: list[str], index: int, font_name=None, font_size=None) -> None:
+        self.font_name = font_name
+        self.font_size = font_size
+
         self.completions = completions
         self.index = index
         self.completion_num = 0
@@ -73,7 +133,13 @@ class AutoComplete(arcade.gui.UILayout):
 
         completions = self.get_displayed_completions()
         for i, complete in enumerate(completions):
-            child = arcade.gui.UILabel(text=complete, y=y, text_color=arcade.types.Color(223, 192, 101) if i == self.completion_num else arcade.types.Color(180, 180, 180), font_size=20)
+            k = {}
+            if self.font_name:
+                k["font_name"] = self.font_name
+            if self.font_size:
+                k["font_size"] = self.font_size
+
+            child = arcade.gui.UILabel(text=complete, y=y, text_color=arcade.types.Color(223, 192, 101) if i == self.completion_num else arcade.types.Color(180, 180, 180), **k)
             children.append(child)
             y += child.content_height + self.complete_spacing
 
@@ -151,6 +217,9 @@ class CustomInputText(arcade.gui.UIInputText):
             self.shift_held = True
         else:
             self.shift_held = False
+
+    def _on_active_changed(self):
+        self._grap_active()
 
     def on_event(self, event: UIEvent) -> bool | None:
         if isinstance(event, UIKeyReleaseEvent):
@@ -269,6 +338,8 @@ class CommandView(arcade.gui.UIView):
         super().__init__()
         self.background_color = background_view.background_color or arcade.color.WHITE
 
+        self.texts: dict[int, Text] = {}
+
         self.default_attributes = {
             "font_name": font,
             "font_size": font_size,
@@ -299,7 +370,7 @@ class CommandView(arcade.gui.UIView):
 
         self.text_area = self.grid.add(
             BetterTextArea(
-                text="<br>" * 50,
+                # text="<br>" * 50,
                 text_color=(255, 255, 255, 255),
                 size_hint=(1, text_area_height),
                 font_name=font,
@@ -312,11 +383,30 @@ class CommandView(arcade.gui.UIView):
         self.text_area.trigger_full_render()
         self.text_area.top = height
 
+
+        @self.text_area.event("on_event")
+        def _(event: arcade.gui.UIEvent):
+            if isinstance(event, UIMousePressEvent):
+                button = event.button
+                if button == arcade.MOUSE_BUTTON_LEFT:
+                    x = event.x - self.text_area.padding[3]
+                    y = event.y - self.text_area.bottom
+                    pos = self.text_area.layout.get_position_from_point(x, y)  # since this gets the closest sometimes it might give bad results... I shall ignore that fact
+
+                    if pos == len(self.text):
+                        return
+
+                    for text in self.texts.values():
+                        if pos in range(text.start, text.end):
+                            if hasattr(text, "on_press"):
+                                text.on_press()
+                            break
+
         style = arcade.gui.UIInputText.UIStyle(bg=Color(0, 0, 0, 220), border=Color(0, 0, 0, 0), border_width=0)
 
         self.input_area = self.grid.add(
             CustomInputText(
-                font=font,
+                font_name=font,
                 font_size=font_size,
                 size_hint=(1, input_height),
                 multiline=False,
@@ -333,24 +423,6 @@ class CommandView(arcade.gui.UIView):
         self.input_area.with_padding(all=5)
 
         self.auto_complete: AutoComplete | None = None
-
-        # self.suggestion = self.ui.add(
-        #     UILabel(
-        #         x=0,
-        #         y=self.input_area.center_y - pg_font.get_text_size("Test")[1] // 2,
-        #         font_name=font,
-        #         font_size=font_size,
-        #         text_color=(100, 100, 100),
-        #         # italic=True
-        #     )
-        # )
-
-        # i = 0
-        # def a(dt):
-        #     nonlocal i
-        #     i += 1
-        #     self.send_text(f"Hello {i}\n")
-        # arcade.schedule(a, 1)
 
         @self.input_area.event("on_event")
         def _(event: arcade.gui.UIEvent):
@@ -405,7 +477,9 @@ class CommandView(arcade.gui.UIView):
                             x=width,
                             y=height + 5,
                             completions=completions,
-                            index=index
+                            index=index,
+                            font_name=font,
+                            font_size=font_size
                         )
                     )
                 else:
@@ -475,23 +549,106 @@ class CommandView(arcade.gui.UIView):
         self.input_area.deactivate()
         return super().on_hide_view()
 
-    def send_text(self, text: str, **kwargs):
+    def send_text(self, *texts: str | TextStyle, **kwargs) -> Text:
         """Append text to the text area."""
+        if not texts or not all(text for text in texts):
+            return  # type: ignore
+
         start = len(self.text_area.text)
+        _start = start
 
         kwargs = {**self.default_attributes, **kwargs}
-
-        self.text_area.doc.insert_text(
-            start,  # type: ignore
-            text,
-            attributes=kwargs,
-        )
+        for text in texts:
+            if isinstance(text, str):
+                self.text_area.doc.insert_text(
+                    start,  # type: ignore
+                    text,
+                    attributes=kwargs,
+                )
+            else:
+                self.text_area.doc.insert_text(
+                    start,  # type: ignore
+                    text.string,
+                    attributes={**self.default_attributes, **text.kwargs},
+                )
+            start += len(text)
 
         self.text_area.layout.view_y = float("-inf")  # type: ignore
         self.text_area.trigger_full_render()
 
+        txt_obj = Text(self, _start, len(self.text_area.text))
+        self.texts[txt_obj.id] = txt_obj
+        return txt_obj
+
+    def edit_text(self, text: Text | int, *new_texts: str | TextStyle, **kwargs):
+        if not new_texts or not all(text for text in new_texts):
+            return self.delete_text(text)
+
+        if isinstance(text, Text):
+            id = text.id
+        else:
+            id = text
+
+        try:
+            text = self.texts[id]
+        except KeyError:
+            return  # no, 404
+
+        kwargs = {**self.default_attributes, **kwargs}
+
+        lengths = [len(new_text) for new_text in new_texts]
+        total_len = sum(lengths)
+        diff = total_len - (text.end - text.start)
+
+        self.text_area.doc.delete_text(text.start, text.end)
+
+        start = text.start
+        for new_text, length in zip(new_texts, lengths):
+            if isinstance(new_text, str):
+                self.text_area.doc.insert_text(start, new_text, attributes=kwargs)
+            else:
+                self.text_area.doc.insert_text(start, new_text.string, attributes={**self.default_attributes, **new_text.kwargs})
+            start += length
+
+        self.text_area.trigger_full_render()
+
+        if diff != 0:
+            text.end = text.start + total_len
+
+            for txt in self.texts.values():
+                if txt.start > text.start:
+                    txt.start += diff
+                    txt.end += diff
+
+    def delete_text(self, text: Text | int):
+        if isinstance(text, Text):
+            id = text.id
+        else:
+            id = text
+
+        try:
+            text = self.texts[id]
+        except KeyError:
+            return  # no, 404
+
+        self.text_area.doc.delete_text(text.start, text.end)
+
+        self.text_area.trigger_full_render()
+
+        length = text.end - text.start
+        for txt in self.texts.values():
+            if txt.start > text.start:
+                txt.start -= length
+                txt.end -= length
+
+        del self.texts[id]
+
+    def set_style(self, start, end, attributes):
+        attributes = {**self.default_attributes, **attributes}
+        self.text_area.doc.set_style(start, end, attributes)
+        self.text_area.trigger_full_render()
+
     def on_resize(self, width: int, height: int) -> bool | None:
-        height = height
         input_height = self.input_text_height / height
         text_area_height = 1 - input_height
 
@@ -500,6 +657,9 @@ class CommandView(arcade.gui.UIView):
 
         self.input_area.bottom = 0
         self.text_area.top = height
+
+        self.input_area.deactivate()
+        self.input_area.activate()
 
     @property
     def text(self):

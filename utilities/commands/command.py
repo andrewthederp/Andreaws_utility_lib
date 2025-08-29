@@ -37,6 +37,7 @@ class Command:
         self.pass_context = pass_context
 
         for name, param in inspect.signature(self.callback).parameters.items():
+
             if isinstance(param.default, Parameter):
                 self.parameters.append(param.default)
             else:

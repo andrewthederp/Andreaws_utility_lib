@@ -1,6 +1,6 @@
 import arcade
 from .debug_menu import *
-from .commands import CommandView, CommandContext
+from .commands import CommandView, CommandContext, Text, TextStyle
 from .PiPWindow import PiPWindow, DragRect, DragRectType
 from typing import TypedDict, Callable, Any
 
