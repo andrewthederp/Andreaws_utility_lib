@@ -16,7 +16,7 @@ class MakeModal(discord.ui.Modal):
         for text_input_data in inputs:
             if isinstance(text_input_data, dict):
                 text_input = discord.ui.TextInput(
-                    placeholder=text_input_data["placeholder"],
+                    placeholder=text_input_data.get("placeholder"),
                     required=text_input_data.get("required", False),
                     style=text_input_data.get("style", discord.TextStyle.short),
                     default=text_input_data.get('default')
@@ -24,7 +24,7 @@ class MakeModal(discord.ui.Modal):
 
                 self.add_item(
                     discord.ui.Label(
-                        text=text_input_data["label"],
+                        text=text_input_data["text"],
                         description=text_input_data.get("description"),
                         component=text_input
                     )
@@ -39,6 +39,6 @@ class MakeModal(discord.ui.Modal):
 
         for item in self.children:
             if isinstance(item, discord.ui.Label):
-                values[item.label.lower()] = item.component.value
+                values[item.text.lower()] = item.component.value
 
         await self.on_submit_func(interaction, values)
