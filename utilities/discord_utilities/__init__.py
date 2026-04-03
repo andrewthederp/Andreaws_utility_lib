@@ -133,9 +133,10 @@ def convert_to_file(txt: str | bytes, filename: str) -> discord.File:
         return discord.File(io.BytesIO(txt), filename=filename)
 
 
-async def load_extensions(bot, path_to_extensions, *, func=lambda i: None) -> None:
+async def load_extensions(bot, path_to_extensions, *, exceptions: list[str] = None, func=lambda i: None) -> None:
+    exceptions = exceptions or []
     for ext in os.listdir(path_to_extensions):
-        if ext.endswith(".py"):
+        if ext.endswith(".py") and ext not in exceptions:
             await bot.load_extension(f"{path_to_extensions.replace('/', '.')}.{ext[:-3]}")
             func(ext)
 
