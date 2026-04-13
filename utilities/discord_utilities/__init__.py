@@ -19,6 +19,7 @@ from .columned_view import ColumnedView, ColumnedButton, columned_button, make_v
 from .paginator import Paginator, PaginatorBehaviour, embed_creator
 from .utils import get_image_url
 from .toggle_button import ToggleButton
+from .buttons import MessageButton, ModalButton, ViewSwitchButton
 
 
 class MoneyConverter(commands.Converter):
