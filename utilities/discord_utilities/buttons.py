@@ -1,7 +1,7 @@
 import discord
 from discord import ButtonStyle
 
-from typing import Optional
+from typing import Optional, Union
 
 
 class MessageButton(discord.ui.Button):  # a button that only sends a single message
